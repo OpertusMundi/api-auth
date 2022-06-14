@@ -1,0 +1,27 @@
+# vim: syntax=yaml:
+
+version: '3.6'
+
+services:
+
+  'app':
+    image: opertusmundi/rest-auth:${VERSION}
+    build:
+      context: .
+      dockerfile: ./src/main/docker/Dockerfile.jvm
+    volumes: 
+    # runtime configuration (override configuration from classpath)
+    # see https://quarkus.io/guides/config-reference#configuration-sources
+    - type: bind
+      source: ./config/
+      target: /deployments/config
+      read_only: true
+    environment:
+      JAVA_MAX_MEM_RATIO: "70"
+      JAVA_OPTS_APPEND:
+    ports:
+    - '38500:8080'
+    mem_limit: 512m
+    memswap_limit: 512m
+
+
