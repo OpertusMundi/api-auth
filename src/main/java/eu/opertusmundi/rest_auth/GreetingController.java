@@ -60,6 +60,6 @@ public class GreetingController
         return accountClientService.fetch(clientId)
             .map(ClientDto.class::cast)
             .replaceIfNullWith(() -> new ClientDto(clientId))
-            .map(clientDto -> tokenInfo.withClient(clientDto));
+            .map(tokenInfo::withClient);
     }
 }

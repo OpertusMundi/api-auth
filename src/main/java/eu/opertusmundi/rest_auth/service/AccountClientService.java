@@ -27,7 +27,7 @@ public class AccountClientService
         try {
             clientId = UUID.fromString(clientIdAsString);
         } catch (IllegalArgumentException ex) {
-            return Uni.createFrom().nullItem();
+            return Uni.createFrom().failure(ex);
         }
         
         return this.fetch(clientId);
@@ -36,7 +36,6 @@ public class AccountClientService
     public Uni<AccountClientDto> fetch(UUID clientId)
     {
         return accountClientRepository.fetch(clientId)
-            .map(defaultEntityToDtoMapper)
-            .onFailure().recoverWithNull();
+            .map(defaultEntityToDtoMapper);
     }
 }

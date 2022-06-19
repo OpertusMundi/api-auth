@@ -24,14 +24,12 @@ public class AccountService
     public Uni<AccountDto> fetchByKey(UUID key)
     {
         return accountRepository.fetchByKey(key)
-            .map(defaultEntityToDtoMapper)
-            .onFailure().recoverWithNull();
+            .map(defaultEntityToDtoMapper);
     }
     
     public Uni<AccountDto> fetchById(int id)
     {
         return accountRepository.fetchById(id)
-            .map(defaultEntityToDtoMapper)
-            .onFailure().recoverWithNull();
+            .map(defaultEntityToDtoMapper);
     }
 }
