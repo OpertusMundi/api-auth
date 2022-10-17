@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth.domain;
+package eu.opertusmundi.api_auth.domain;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +20,8 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.NaturalId;
 
-import eu.opertusmundi.rest_auth.model.AccountClientDto;
-import eu.opertusmundi.rest_auth.model.AccountDto;
+import eu.opertusmundi.api_auth.model.AccountClientDto;
+import eu.opertusmundi.api_auth.model.AccountDto;
 
 @lombok.Setter
 @lombok.Getter

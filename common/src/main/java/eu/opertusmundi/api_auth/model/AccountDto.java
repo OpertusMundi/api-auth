@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth.model;
+package eu.opertusmundi.api_auth.model;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth;
+package eu.opertusmundi.api_auth.auth_subrequest;
 
 import java.util.UUID;
 
@@ -10,9 +10,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import eu.opertusmundi.rest_auth.model.AccountDto;
-import eu.opertusmundi.rest_auth.service.AccountService;
 import io.smallrye.mutiny.Uni;
+
+import eu.opertusmundi.api_auth.auth_subrequest.service.AccountService;
+import eu.opertusmundi.api_auth.model.AccountDto;
 
 @RolesAllowed({"account-viewer"})
 @Path("/accounts")

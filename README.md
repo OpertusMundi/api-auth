@@ -1,12 +1,16 @@
-# Auth subrequest for `topio.market` REST services
+# Auth for `topio.market` services
 
 ## Running the application in dev mode
+
+_FIXME_
 
 You can run your application in dev mode that enables live coding using:
 ```shell script
 mvn compile quarkus:dev
 ```
 ## Packaging and running the application
+
+_FIXME_
 
 The application can be packaged using:
 

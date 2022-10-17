@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth.model;
+package eu.opertusmundi.api_auth.model;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;

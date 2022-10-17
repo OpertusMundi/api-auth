@@ -1,10 +1,10 @@
-package eu.opertusmundi.rest_auth.repository;
+package eu.opertusmundi.api_auth.auth_subrequest.repository;
 
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import eu.opertusmundi.rest_auth.domain.AccountEntity;
+import eu.opertusmundi.api_auth.domain.AccountEntity;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.quarkus.hibernate.reactive.panache.common.runtime.ReactiveTransactional;
 import io.smallrye.mutiny.Uni;

@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth.domain;
+package eu.opertusmundi.api_auth.domain;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -15,8 +15,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.NaturalId;
 
-import eu.opertusmundi.rest_auth.model.AccountClientDto;
-import eu.opertusmundi.rest_auth.model.ClientDto;
+import eu.opertusmundi.api_auth.model.AccountClientDto;
 
 @lombok.Getter
 @lombok.Setter

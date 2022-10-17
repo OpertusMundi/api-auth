@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth.service;
+package eu.opertusmundi.api_auth.auth_subrequest.service;
 
 import java.util.UUID;
 import java.util.function.Function;
@@ -6,10 +6,9 @@ import java.util.function.Function;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import eu.opertusmundi.rest_auth.domain.AccountEntity;
-import eu.opertusmundi.rest_auth.model.AccountDto;
-import eu.opertusmundi.rest_auth.repository.AccountClientRepository;
-import eu.opertusmundi.rest_auth.repository.AccountRepository;
+import eu.opertusmundi.api_auth.auth_subrequest.repository.AccountRepository;
+import eu.opertusmundi.api_auth.domain.AccountEntity;
+import eu.opertusmundi.api_auth.model.AccountDto;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped

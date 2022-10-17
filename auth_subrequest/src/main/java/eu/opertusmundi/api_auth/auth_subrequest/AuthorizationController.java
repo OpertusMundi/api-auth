@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth;
+package eu.opertusmundi.api_auth.auth_subrequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,12 +16,11 @@ import org.jboss.resteasy.reactive.RestResponse.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.opertusmundi.rest_auth.model.AccountClientDto;
-import eu.opertusmundi.rest_auth.service.AccountClientService;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
 
+import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
 
 @Path("/authorize")
 public class AuthorizationController
@@ -74,7 +73,8 @@ public class AuthorizationController
                 LOGGER.info(" == accountClient={}", accountClient);
                 return RestResponse.noContent();
             })
-            .onFailure()
+            //.onFailure() // FIXME
+            ;
     }
     
     

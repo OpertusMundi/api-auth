@@ -1,4 +1,4 @@
-package eu.opertusmundi.rest_auth;
+package eu.opertusmundi.api_auth.auth_subrequest;
 
 import java.util.Set;
 
@@ -10,11 +10,12 @@ import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
-import eu.opertusmundi.rest_auth.model.ClientDto;
-import eu.opertusmundi.rest_auth.service.AccountClientService;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
+
+import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
+import eu.opertusmundi.api_auth.model.ClientDto;
 
 @Path("/hello")
 public class GreetingController
