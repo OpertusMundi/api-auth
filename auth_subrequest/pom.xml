@@ -6,10 +6,10 @@
     <artifactId>parent</artifactId>
     <version>0.0.1</version>
   </parent>
-  <groupId>eu.opertusmundi.api_auth</groupId>
   <artifactId>auth-subrequest</artifactId>
   <properties>
     <failsafe.useModulePath>false</failsafe.useModulePath>
+    <commons-lang.version>3.12.0</commons-lang.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -75,6 +75,12 @@
     <dependency>
       <groupId>eu.opertusmundi.api_auth</groupId>
       <artifactId>common</artifactId>
+    </dependency>
+    <!-- utilities -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang.version}</version>
     </dependency>
   </dependencies>
   <build>

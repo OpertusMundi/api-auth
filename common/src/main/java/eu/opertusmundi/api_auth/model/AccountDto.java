@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @lombok.Getter
 @lombok.Setter
+@lombok.ToString
 @JsonInclude(Include.NON_EMPTY)
 public class AccountDto
 {

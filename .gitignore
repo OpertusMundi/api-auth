@@ -39,6 +39,7 @@ nb-configuration.xml
 .env
 config/
 cacerts/
+secrets
 
 # Local notes
 README-quarkus.md
