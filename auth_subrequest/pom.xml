@@ -9,7 +9,6 @@
   <artifactId>auth-subrequest</artifactId>
   <properties>
     <failsafe.useModulePath>false</failsafe.useModulePath>
-    <commons-lang.version>3.12.0</commons-lang.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -27,6 +26,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+    </dependency>
+	<dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-reactive-routes</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -80,7 +83,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${commons-lang.version}</version>
     </dependency>
   </dependencies>
   <build>

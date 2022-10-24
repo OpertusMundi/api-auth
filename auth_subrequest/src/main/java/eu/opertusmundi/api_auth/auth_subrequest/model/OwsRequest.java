@@ -1,0 +1,36 @@
+package eu.opertusmundi.api_auth.auth_subrequest.model;
+
+import java.util.Map;
+
+/**
+ * Represents a base OWS (WMS/WMTS/WFS) request
+ */
+@lombok.Getter
+@lombok.ToString
+@lombok.AllArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+public abstract class OwsRequest extends BaseRequest
+{
+    /**
+     * The service name (e.g. `WMS`)
+     */
+    protected final String service;
+ 
+    public static final String SERVICE_PARAMETER_NAME = "service";
+    
+    /**
+     * The service-specific version
+     */
+    protected final String version;
+    
+    public static final String VERSION_PARAMETER_NAME = "version";
+    
+    /**
+     * The service-specific operation name (e.g. `GetMap` for a WMS service), 
+     * called <code>request</code> in OGC terminology
+     */
+    protected final String request;
+    
+    public static final String REQUEST_PARAMETER_NAME = "request";
+    
+    protected abstract void setFromMap(Map<String, String> queryParameters);
+}
