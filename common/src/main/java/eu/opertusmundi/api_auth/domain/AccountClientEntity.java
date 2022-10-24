@@ -46,18 +46,18 @@ public class AccountClientEntity
 
     @NotNull
     @Column(name = "`created_on`")
-    private ZonedDateTime createdOn;
+    private ZonedDateTime created;
 
     @Column(name = "`revoked_on`")
-    private ZonedDateTime revokedOn;
+    private ZonedDateTime revoked;
     
     public AccountClientDto toDto(boolean convertAccountToDto)
     {
         final AccountClientDto d = new AccountClientDto(clientId);
         
         d.setAlias(alias);
-        d.setCreatedOn(createdOn);
-        d.setRevokedOn(revokedOn);
+        d.setCreated(created);
+        d.setRevoked(revoked);
         
         if (convertAccountToDto && account != null) {
             d.setAccount(account.toDto(false, false, false));

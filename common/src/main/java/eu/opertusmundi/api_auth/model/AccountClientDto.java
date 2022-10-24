@@ -32,7 +32,7 @@ public class AccountClientDto extends ClientDto
     
     private String alias;
     
-    private ZonedDateTime createdOn;
+    private ZonedDateTime created;
 
-    private ZonedDateTime revokedOn;
+    private ZonedDateTime revoked;
 }

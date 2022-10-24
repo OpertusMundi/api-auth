@@ -28,6 +28,8 @@ public class QueryStringUtil
     
     static final Function<String, String> urlDecoder = s -> URLDecoder.decode(s, defaultCharset);
     
+    static final Function<String, String> toLowerCaseConverter = String::toLowerCase;
+    
     private static final BinaryOperator<String> getRight = (x, y) -> y;
     
     public static Map<String, String> parseQueryStringToMap(String query)
@@ -35,7 +37,8 @@ public class QueryStringUtil
         if (StringUtils.isBlank(query))
             return Collections.emptyMap();
         return Arrays.stream(StringUtils.split(query, '&')).map(nameValueParser)
-            .collect(Collectors.toUnmodifiableMap(Pair::getKey, urlDecoder.compose(Pair::getValue), getRight));
+            .collect(Collectors.toUnmodifiableMap(toLowerCaseConverter.compose(Pair::getKey), 
+                urlDecoder.compose(Pair::getValue), getRight));
     }
     
     public static Map<String, String> parseQueryStringToMap(URI uri)
@@ -49,7 +52,7 @@ public class QueryStringUtil
         if (StringUtils.isBlank(query))
             return Collections.emptyMap();
         return Arrays.stream(StringUtils.split(query, '&')).map(nameValueParser)
-            .collect(Collectors.groupingBy(Pair::getKey, 
+            .collect(Collectors.groupingBy(toLowerCaseConverter.compose(Pair::getKey), 
                 Collectors.mapping(urlDecoder.compose(Pair::getValue), Collectors.toUnmodifiableList())));
     }
     

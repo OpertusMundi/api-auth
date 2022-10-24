@@ -5,15 +5,16 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.jboss.resteasy.reactive.RestResponse.Status;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,46 +43,65 @@ public class WorkspaceAuthorizationController
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkspaceAuthorizationController.class);
     
-    private static final Pattern WORKSPACE_PATTERN = Pattern.compile("(?<workspace>" +
+    static final Pattern WORKSPACE_PATTERN = Pattern.compile(
+        "(?<workspace>" +
             "(?<workspacePrefix>[a-z][-a-z0-9]*)?" + "_" +
             "(?<providerAccountKey>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})" + ")", 
         Pattern.CASE_INSENSITIVE);
     
-    private static class WorkspaceInfo
+    static class WorkspaceInfo
     {
-        String prefix;
+        final String prefix;
         
-        String providerAccountKey;
+        final String providerAccountKey;
+        
+        WorkspaceInfo(String prefix, String providerAccountKey)
+        {
+            this.prefix = prefix;
+            this.providerAccountKey = Objects.requireNonNull(providerAccountKey);
+        }
+        
+        static WorkspaceInfo fromString(String workspace)
+        {
+            final Matcher workspaceMatcher = WORKSPACE_PATTERN.matcher(workspace);
+            if (!workspaceMatcher.matches()) {
+                throw new IllegalArgumentException("workspace is malformed: [" + workspace + "]");
+            } 
+            return new WorkspaceInfo(
+                workspaceMatcher.group("workspacePrefix"), 
+                workspaceMatcher.group("providerAccountKey"));
+        }
     }
+    
+    @Context
+    SecurityIdentity securityIdentity;
 
+    @Context
+    HttpHeaders httpHeaders;
+    
+    @Context
+    UriInfo uriInfo;
+    
     @Inject
     Authorizer<WmsRequest> wmsAuthorizer;
     
-    @Inject
-    SecurityIdentity securityIdentity;
- 
     @GET
     @Path("/wms")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Uni<RestResponse<Object>> authorizeForWms(
-        @PathParam("workspace") final String workspace,
-        @HeaderParam(REQUEST_ID_HEADER_NAME) final String requestId,
+    public Uni<RestResponse<?>> authorizeForWms(
         @HeaderParam(AUTH_REQUEST_REDIRECT_HEADER_NAME) final URI authRequestRedirect)
     {
-        final String clientKey = clientKeyFromJwt();
-        final WorkspaceInfo workspaceInfo = workspaceInfoFromString(workspace);
-
+        final String clientKey = clientKeyFromContext();
+        final WorkspaceInfo workspaceInfo = workspaceInfoFromContext();
+        final WmsRequest wmsRequest = WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
         try {
-            wmsAuthorizer.authorize(clientKey, workspaceInfo.providerAccountKey, 
-                WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect)));
+            wmsAuthorizer.authorize(clientKey, workspaceInfo.providerAccountKey, wmsRequest);
         } catch (ConsumerNotAuthorizedException x) {
-            return Uni.createFrom().item(responseForForbidden(x.getMessage()));
+            return Uni.createFrom().item(responseForNotAuthorized(x.getMessage()));
         }
-        
         return Uni.createFrom().item(responseForSuccess()); 
     }
     
-    private String clientKeyFromJwt()
+    private String clientKeyFromContext()
     {
         final JsonWebToken jwt = (JsonWebToken) securityIdentity.getPrincipal();
         
@@ -93,16 +114,15 @@ public class WorkspaceAuthorizationController
         return clientKey;
     }
     
-    private WorkspaceInfo workspaceInfoFromString(String workspace)
+    private WorkspaceInfo workspaceInfoFromContext()
     {
-        final Matcher workspaceMatcher = WORKSPACE_PATTERN.matcher(workspace);
-        if (!workspaceMatcher.matches()) {
-            throw new IllegalStateException("workspace is malformed: [" + workspace + "]");
-        } 
-        final WorkspaceInfo workspaceInfo = new WorkspaceInfo();
-        workspaceInfo.prefix = workspaceMatcher.group("workspacePrefix");
-        workspaceInfo.providerAccountKey = workspaceMatcher.group("providerAccountKey");
-        return workspaceInfo;
+        final MultivaluedMap<String, String> pathParameters = uriInfo.getPathParameters();
+        return WorkspaceInfo.fromString(pathParameters.getFirst("workspace"));
+    }
+    
+    private String requestIdFromContext()
+    {
+        return this.httpHeaders.getHeaderString(REQUEST_ID_HEADER_NAME);
     }
     
     private RestResponse<Object> responseForBadRequest(String message)
@@ -112,7 +132,7 @@ public class WorkspaceAuthorizationController
             .build();
     }
     
-    private RestResponse<Object> responseForForbidden(String message)
+    private RestResponse<Object> responseForNotAuthorized(String message)
     {
         return RestResponse.ResponseBuilder.create(RestResponse.Status.FORBIDDEN)
             .header(ERROR_MESSAGE_HEADER_NAME, message)

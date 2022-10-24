@@ -13,9 +13,9 @@ public class WmsAuthorizer implements Authorizer<WmsRequest>
         throws ConsumerNotAuthorizedException
     {
         // Todo Auto-generated method stub
-        System.err.printf(" === WmsAuthorizer.authorize():" +
-            "\n\tconsumerClientKey=[%s]" +
-            "\n\tproviderAccountKey=[%s]" +
-            "\n\tr=%s\n", consumerClientKey, providerAccountKey, r);
+        System.err.println(" === WmsAuthorizer.authorize():");
+        System.err.println(" ===    consumerClientKey=" + consumerClientKey);
+        System.err.println(" ===    providerAccountKey=" + providerAccountKey);
+        System.err.println(" ===    r=" + r);    
     }
 }
