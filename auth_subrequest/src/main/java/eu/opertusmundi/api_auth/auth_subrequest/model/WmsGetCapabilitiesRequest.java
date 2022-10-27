@@ -3,7 +3,6 @@ package eu.opertusmundi.api_auth.auth_subrequest.model;
 import java.util.Map;
 
 @lombok.Getter
-@lombok.ToString(callSuper = true)
 public class WmsGetCapabilitiesRequest extends WmsRequest
 {
     public WmsGetCapabilitiesRequest(WmsRequest.ServiceVersion version)

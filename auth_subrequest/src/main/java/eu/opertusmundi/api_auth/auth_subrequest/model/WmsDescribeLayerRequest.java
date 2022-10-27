@@ -12,7 +12,6 @@ import org.apache.commons.lang3.Validate;
  * @see https://docs.geoserver.org/stable/en/user/services/wms/reference.html#describelayer
  */
 @lombok.Getter
-@lombok.ToString(callSuper = true)
 public class WmsDescribeLayerRequest extends WmsRequest
 {
     public enum OutputFormat
@@ -89,5 +88,12 @@ public class WmsDescribeLayerRequest extends WmsRequest
     void setOutputFormat(OutputFormat outputFormat)
     {
         this.outputFormat = Objects.requireNonNull(outputFormat).format;
+    }
+    
+    @Override
+    public String toString()
+    {
+        return String.format("%s.%s {version=%s, layers=%s}", 
+            service, request, version, layerNames);
     }
 }

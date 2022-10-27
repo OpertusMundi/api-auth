@@ -12,15 +12,17 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public class AccountClientDto extends ClientDto
 {
-    public AccountClientDto(String clientId)
+    public AccountClientDto(String key)
     {
-        super(clientId);
+        super(key);
     }
     
-    public AccountClientDto(UUID clientId)
+    public AccountClientDto(UUID key)
     {
-        super(clientId == null? null : clientId.toString());
+        super(key == null? null : key.toString());
     }
+    
+    private Integer accountId;
     
     private AccountDto account;
     
@@ -35,4 +37,12 @@ public class AccountClientDto extends ClientDto
     private ZonedDateTime created;
 
     private ZonedDateTime revoked;
+
+    @Override
+    public String toString()
+    {
+        return String.format(
+            "AccountClientDto {key=%s, accountId=%s, account=%s, alias=%s}",
+            key, accountId, account, alias);
+    }
 }

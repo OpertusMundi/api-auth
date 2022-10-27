@@ -1,7 +1,6 @@
 package eu.opertusmundi.api_auth.domain;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -16,7 +15,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.NaturalId;
 
 import eu.opertusmundi.api_auth.model.AccountSubscriptionDto;
 import eu.opertusmundi.api_auth.model.AssetSourceType;
@@ -35,18 +33,17 @@ public class AccountSubscriptionEntity
     private Integer id;
 
     @NotNull
-    @NaturalId
-    @Column(name = "key", updatable = false, columnDefinition = "uuid")
+    @Column(name = "`key`", updatable = false, columnDefinition = "uuid", unique = true)
     private UUID key;
     
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "consumer", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "`consumer`", nullable = false)
     private AccountEntity consumer;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "provider", nullable = false)
+    @JoinColumn(name = "`provider`", nullable = false)
     private AccountEntity provider;
     
     @NotNull
@@ -83,7 +80,36 @@ public class AccountSubscriptionEntity
     
     public AccountSubscriptionDto toDto()
     {
-        // Todo
-        return null;
+        return toDto(false);
+    }
+    
+    public AccountSubscriptionDto toDto(boolean convertAccountToDto)
+    {
+        final AccountSubscriptionDto d = new AccountSubscriptionDto(id, key);
+
+        if (consumer != null) {
+            d.setConsumerAccountId(consumer.getId());
+            if (convertAccountToDto)
+                d.setConsumer(consumer.toDto(false, false, false));
+        }
+        
+        if (provider != null) {
+            d.setProviderAccountId(provider.getId());
+            if (convertAccountToDto)
+                d.setProvider(provider.toDto(false, false, false));
+        }
+        
+        d.setAsset(asset);
+        
+        d.setAdded(added);
+        d.setUpdated(updated);
+        d.setCancelled(cancelled);
+        d.setExpires(expires);
+        
+        d.setSource(source);
+        d.setTopic(topic);
+        d.setStatus(status);
+        
+        return d;
     }
 }

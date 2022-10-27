@@ -1,10 +1,12 @@
 package eu.opertusmundi.api_auth.auth_subrequest.repository;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 
 import eu.opertusmundi.api_auth.domain.AccountEntity;
+import io.quarkus.hibernate.reactive.panache.PanacheQuery;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.quarkus.hibernate.reactive.panache.common.runtime.ReactiveTransactional;
 import io.smallrye.mutiny.Uni;
@@ -15,21 +17,32 @@ public class AccountRepository implements PanacheRepositoryBase<AccountEntity, I
     @ReactiveTransactional
     public Uni<AccountEntity> findByKey(UUID key)
     {
-        return this.find("a.key = ?1", key)
-            .singleResult();
+        return this.findByKey(key, false);
     }
     
     @ReactiveTransactional
-    public Uni<AccountEntity> fetchByKey(UUID key)
+    public Uni<AccountEntity> findByKey(UUID key, boolean fetchAssociatedClients)
     {
-        return this.find("FROM Account a LEFT JOIN FETCH a.clients WHERE a.key = ?1", key)
-            .singleResult();
+        Objects.requireNonNull(key);
+        
+        PanacheQuery<AccountEntity> q;
+        if (fetchAssociatedClients) {
+            q = this.find("FROM Account a LEFT JOIN FETCH a.clients WHERE a.key = ?1", key);
+        } else {
+            q = this.find("FROM Account a WHERE a.key = ?1", key);
+        }
+        
+        return q.singleResult();
     }
     
     @ReactiveTransactional
-    public Uni<AccountEntity> fetchById(int id)
+    public Uni<AccountEntity> findById(Integer id, boolean fetchAssociatedClients)
     {
-        return this.find("FROM Account a LEFT JOIN FETCH a.clients WHERE a.id = ?1", id)
-            .singleResult();
+        if (!fetchAssociatedClients)
+            return this.findById(id);
+        
+        PanacheQuery<AccountEntity> q = 
+            this.find("FROM Account a LEFT JOIN FETCH a.clients WHERE a.id = ?1", id);
+        return q.singleResult();
     }
 }

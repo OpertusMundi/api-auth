@@ -6,5 +6,5 @@ package eu.opertusmundi.api_auth.model;
 @lombok.AllArgsConstructor
 public class ClientDto
 {
-    private String clientId;   
+    protected String key;   
 }

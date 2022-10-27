@@ -21,7 +21,11 @@ import org.slf4j.LoggerFactory;
 
 import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedException;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
+import eu.opertusmundi.api_auth.auth_subrequest.service.AccountService;
 import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
+import eu.opertusmundi.api_auth.model.AccountClientDto;
+import eu.opertusmundi.api_auth.model.AccountDto;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
@@ -49,6 +53,8 @@ public class WorkspaceAuthorizationController
             "(?<providerAccountKey>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})" + ")", 
         Pattern.CASE_INSENSITIVE);
     
+    @lombok.Getter
+    @lombok.ToString
     static class WorkspaceInfo
     {
         final String prefix;
@@ -83,6 +89,12 @@ public class WorkspaceAuthorizationController
     UriInfo uriInfo;
     
     @Inject
+    AccountClientService accountClientService;
+    
+    @Inject
+    AccountService accountService;
+    
+    @Inject
     Authorizer<WmsRequest> wmsAuthorizer;
     
     @GET
@@ -92,13 +104,21 @@ public class WorkspaceAuthorizationController
     {
         final String clientKey = clientKeyFromContext();
         final WorkspaceInfo workspaceInfo = workspaceInfoFromContext();
-        final WmsRequest wmsRequest = WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
-        try {
-            wmsAuthorizer.authorize(clientKey, workspaceInfo.providerAccountKey, wmsRequest);
-        } catch (ConsumerNotAuthorizedException x) {
-            return Uni.createFrom().item(responseForNotAuthorized(x.getMessage()));
-        }
-        return Uni.createFrom().item(responseForSuccess()); 
+        final String requestId = requestIdFromContext();
+        final WmsRequest request = WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
+        
+        final Uni<AccountClientDto> consumerAccountClientUni = accountClientService.findByKey(clientKey, false /*brief*/);
+        final Uni<AccountDto> providerAccountUni = accountService.findByKey(workspaceInfo.providerAccountKey);
+        
+        final Uni<Void> authorizationUni = consumerAccountClientUni.chain(consumerAccountClient -> {
+           return providerAccountUni.chain(providerAccount ->
+               wmsAuthorizer.authorize(consumerAccountClient, providerAccount, requestId, request)
+           ); 
+        });
+        
+        return authorizationUni.onItemOrFailure()
+            .transform((item, ex) -> transformFailureFromAuthorization(
+                ex, clientKey, workspaceInfo.providerAccountKey, requestId));
     }
     
     private String clientKeyFromContext()
@@ -125,17 +145,42 @@ public class WorkspaceAuthorizationController
         return this.httpHeaders.getHeaderString(REQUEST_ID_HEADER_NAME);
     }
     
+    private RestResponse<?> transformFailureFromAuthorization(
+        Throwable ex, String clientKey, String providerAccountKey, String requestId)
+    {
+        if (ex == null) {
+            // no exception received: success
+            return responseForSuccess();
+        } else if (ex instanceof ConsumerNotAuthorizedException) {
+            return responseForNotAuthorized(ex);
+        } else {
+            final String message = "Unexpected failure during authorization of client [" + clientKey + "]";
+            LOGGER.info(message, ex);
+            return responseForBadRequest(ex);
+        }
+    }
+    
+    private RestResponse<Object> responseForBadRequest(Throwable ex)
+    {
+        return responseForBadRequest(Objects.requireNonNull(ex).getMessage());
+    }
+    
     private RestResponse<Object> responseForBadRequest(String message)
     {
         return RestResponse.ResponseBuilder.create(RestResponse.Status.BAD_REQUEST)
-            .header(ERROR_MESSAGE_HEADER_NAME, message)
+            .header(ERROR_MESSAGE_HEADER_NAME, message.lines().findFirst().get())
             .build();
+    }
+    
+    private RestResponse<Object> responseForNotAuthorized(Throwable ex)
+    {
+        return responseForNotAuthorized(Objects.requireNonNull(ex).getMessage());
     }
     
     private RestResponse<Object> responseForNotAuthorized(String message)
     {
         return RestResponse.ResponseBuilder.create(RestResponse.Status.FORBIDDEN)
-            .header(ERROR_MESSAGE_HEADER_NAME, message)
+            .header(ERROR_MESSAGE_HEADER_NAME, message.lines().findFirst().get())
             .build();
     }
     

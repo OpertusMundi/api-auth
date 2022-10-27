@@ -27,7 +27,7 @@ public class AccountController
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<AccountDto> findAccountByKey(@PathParam("key") String keyAsString) 
     {
-        return accountService.fetchByKey(UUID.fromString(keyAsString))
+        return accountService.findByKey(keyAsString)
             .onFailure().recoverWithNull();
     }
     
@@ -36,7 +36,7 @@ public class AccountController
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<AccountDto> findAccountByKey(@PathParam("id") Integer id) 
     {
-        return accountService.fetchById(id)
+        return accountService.findById(id)
             .onFailure().recoverWithNull();
     }
 }

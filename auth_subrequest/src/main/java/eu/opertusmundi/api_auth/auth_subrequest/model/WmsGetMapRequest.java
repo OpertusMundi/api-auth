@@ -16,7 +16,6 @@ import org.apache.commons.lang3.Validate;
  * @see https://docs.geoserver.org/stable/en/user/services/wms/reference.html#getmap
  */
 @lombok.Getter
-@lombok.ToString(callSuper = true)
 public class WmsGetMapRequest extends WmsRequest
 {
     /**
@@ -82,7 +81,6 @@ public class WmsGetMapRequest extends WmsRequest
     }
     
     @lombok.Getter
-    @lombok.ToString
     @lombok.AllArgsConstructor(staticName = "of")
     public static class BBox 
     {
@@ -100,6 +98,12 @@ public class WmsGetMapRequest extends WmsRequest
             double maxy = Double.parseDouble(coords[3]);
             
             return new BBox(minx, miny, maxx, maxy);
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format("{minx=%.4f, miny=%.4f, maxx=%.4f, maxy=%.4f}", minx, miny, maxx, maxy);
         }
     }
     
@@ -285,5 +289,12 @@ public class WmsGetMapRequest extends WmsRequest
     void setSldBody(String sldBody)
     {
         this.sldBody = Objects.requireNonNull(sldBody);
+    }
+    
+    @Override
+    public String toString()
+    {
+        return String.format("%s.%s {version=%s, layers=%s, srs=%s, bbox=%s}", 
+            service, request, version, layerNames, srs, bbox);
     }
 }

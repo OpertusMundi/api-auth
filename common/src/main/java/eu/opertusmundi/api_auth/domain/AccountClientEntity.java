@@ -13,7 +13,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.NaturalId;
 
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 
@@ -31,7 +30,7 @@ public class AccountClientEntity
     private Integer id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "`account`", nullable = false)
     private AccountEntity account;
 
@@ -40,9 +39,8 @@ public class AccountClientEntity
     private String alias;
 
     @NotNull
-    @NaturalId
-    @Column(name = "client_id", updatable = false, columnDefinition = "uuid")
-    private UUID clientId;
+    @Column(name = "client_id", updatable = false, columnDefinition = "uuid", unique = true)
+    private UUID key;
 
     @NotNull
     @Column(name = "`created_on`")
@@ -53,14 +51,16 @@ public class AccountClientEntity
     
     public AccountClientDto toDto(boolean convertAccountToDto)
     {
-        final AccountClientDto d = new AccountClientDto(clientId);
+        final AccountClientDto d = new AccountClientDto(key);
         
         d.setAlias(alias);
         d.setCreated(created);
         d.setRevoked(revoked);
         
-        if (convertAccountToDto && account != null) {
-            d.setAccount(account.toDto(false, false, false));
+        if (account != null) {
+            d.setAccountId(account.getId());
+            if (convertAccountToDto) 
+                d.setAccount(account.toDto(false, false, false));
         }
         
         return d;

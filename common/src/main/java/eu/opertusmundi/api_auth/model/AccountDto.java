@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @lombok.Getter
 @lombok.Setter
-@lombok.ToString
 @JsonInclude(Include.NON_EMPTY)
 public class AccountDto
 {
@@ -27,4 +26,13 @@ public class AccountDto
     private boolean emailVerified;
     
     private List<AccountClientDto> clients;
+
+    @Override
+    public String toString()
+    {
+        return String.format("AccountDto {id=%s, key=%s, blocked=%s, active=%s, email=%s}", 
+            id, key, blocked, active, email);
+    }
+    
+    
 }

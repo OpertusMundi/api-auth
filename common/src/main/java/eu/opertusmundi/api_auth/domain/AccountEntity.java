@@ -18,7 +18,6 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.NaturalId;
 
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
@@ -35,8 +34,7 @@ public class AccountEntity
     private Integer id;
 
     @NotNull
-    @NaturalId
-    @Column(name = "key", updatable = false, columnDefinition = "uuid")
+    @Column(name = "key", updatable = false, columnDefinition = "uuid", unique = true)
     private UUID key;
     
     @OneToOne(optional = true, fetch = FetchType.LAZY)
@@ -58,7 +56,7 @@ public class AccountEntity
     private boolean emailVerified;
     
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-    private List<AccountClientEntity> clients = new ArrayList<>();
+    private List<AccountClientEntity> clients;
 
     public AccountDto toDto()
     {

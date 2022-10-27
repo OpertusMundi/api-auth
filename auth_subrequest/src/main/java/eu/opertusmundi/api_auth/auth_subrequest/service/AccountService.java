@@ -5,6 +5,9 @@ import java.util.function.Function;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import eu.opertusmundi.api_auth.auth_subrequest.repository.AccountRepository;
 import eu.opertusmundi.api_auth.domain.AccountEntity;
@@ -17,18 +20,34 @@ public class AccountService
     @Inject
     AccountRepository accountRepository;
     
-    private final Function<AccountEntity, AccountDto> defaultEntityToDtoMapper = accountEntity -> 
-        accountEntity.toDto(false /*includeParent*/, true /*includeClients*/, false /*backLink*/);
+    private final Function<AccountEntity, AccountDto> defaultToDtoMapper = accountEntity -> 
+        accountEntity.toDto(false /*includeParent*/, false /*includeClients*/, false /*backLink*/);
     
-    public Uni<AccountDto> fetchByKey(UUID key)
+    
+    public Uni<AccountDto> findByKey(@NotBlank String keyAsString)
     {
-        return accountRepository.fetchByKey(key)
-            .map(defaultEntityToDtoMapper);
+        UUID key = null;
+        try {
+            key = UUID.fromString(keyAsString);
+        } catch (IllegalArgumentException ex) {
+            return Uni.createFrom().failure(ex);
+        }
+        return this.findByKey(key);
+    }
+        
+    public Uni<AccountDto> findByKey(@NotNull UUID key)
+    {
+        return accountRepository.findByKey(key, false /*fetchAssociatedClients*/)
+            .map(defaultToDtoMapper)
+            .onFailure(NoResultException.class)
+                .transform(ex -> new IllegalStateException("no account for key: [" + key + "]"));
     }
     
-    public Uni<AccountDto> fetchById(int id)
+    public Uni<AccountDto> findById(int id)
     {
-        return accountRepository.fetchById(id)
-            .map(defaultEntityToDtoMapper);
+        return accountRepository.findById(id, false /*fetchAssociatedClients*/)
+            .map(defaultToDtoMapper)
+            .onFailure(NoResultException.class)
+                .transform(ex -> new IllegalStateException("no account for id: [" + id + "]"));
     }
 }

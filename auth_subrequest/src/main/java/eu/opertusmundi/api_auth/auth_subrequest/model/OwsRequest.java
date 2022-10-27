@@ -2,11 +2,12 @@ package eu.opertusmundi.api_auth.auth_subrequest.model;
 
 import java.util.Map;
 
+import lombok.ToString;
+
 /**
  * Represents a base OWS (WMS/WMTS/WFS) request
  */
 @lombok.Getter
-@lombok.ToString
 @lombok.AllArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public abstract class OwsRequest extends BaseRequest
 {
@@ -33,4 +34,10 @@ public abstract class OwsRequest extends BaseRequest
     public static final String REQUEST_PARAMETER_NAME = "request";
     
     protected abstract void setFromMap(Map<String, String> queryParameters);
+    
+    @Override
+    public String toString()
+    {
+        return String.format("%s.%s {version=%s}", service, request, version);
+    }
 }

@@ -13,7 +13,6 @@ import org.apache.commons.lang3.Validate;
  * @see https://docs.geoserver.org/stable/en/user/services/wms/reference.html
  */
 @lombok.Getter
-@lombok.ToString(callSuper = true)
 public abstract class WmsRequest extends OwsRequest
 {
     public enum ServiceVersion 

@@ -1,5 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest.repository;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -13,9 +14,24 @@ import io.smallrye.mutiny.Uni;
 public class AccountClientRepository implements PanacheRepositoryBase<AccountClientEntity, Integer>
 {
     @ReactiveTransactional
-    public Uni<AccountClientEntity> fetch(UUID clientId)
+    public Uni<AccountClientEntity> findByKey(UUID key)
     {
-        return this.find("FROM AccountClient c JOIN FETCH c.account WHERE c.clientId = ?1", clientId)
-            .singleResult();
+        return this.findByKey(key, false);
+    }
+    
+    @ReactiveTransactional
+    public Uni<AccountClientEntity> findByKey(UUID key, boolean fetchAccount)
+    {
+        Objects.requireNonNull(key);
+        
+        final StringBuilder qlBuilder = new StringBuilder("FROM AccountClient c");
+        if (fetchAccount) {
+            qlBuilder.append(' ');
+            qlBuilder.append("LEFT JOIN FETCH c.account");
+        }
+        qlBuilder.append(' ');
+        qlBuilder.append("WHERE c.key = ?1");
+        
+        return this.find(qlBuilder.toString(), key).singleResult();
     }
 }

@@ -14,7 +14,6 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetMapRequest.OutputFor
  * @see https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html#get-legend-graphic
  */
 @lombok.Getter
-@lombok.ToString(callSuper = true)
 public class WmsGetLegendGraphicRequest extends WmsRequest
 {
     protected String layerName;
@@ -144,5 +143,12 @@ public class WmsGetLegendGraphicRequest extends WmsRequest
     void setLegendOptions(String legendOptions)
     {
         this.legendOptions = Objects.requireNonNull(legendOptions);
+    }
+    
+    @Override
+    public String toString()
+    {
+        return String.format("%s.%s {version=%s, layer=%s}", 
+            service, request, version, layerName);
     }
 }

@@ -1,6 +1,7 @@
 package eu.opertusmundi.api_auth.auth_subrequest;
 
 import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -53,14 +54,14 @@ public class GreetingController
         tokenInfo.setName(name);
         tokenInfo.setRoles(roles);
         
-        final String clientId = jwt.getClaim("clientId");
-        if (clientId == null) {
+        final String clientKey = jwt.getClaim("clientId");
+        if (clientKey == null) {
             return Uni.createFrom().item(tokenInfo);
         }
         
-        return accountClientService.fetch(clientId)
+        return accountClientService.findByKey(UUID.fromString(clientKey))
             .map(ClientDto.class::cast)
-            .replaceIfNullWith(() -> new ClientDto(clientId))
+            .replaceIfNullWith(() -> new ClientDto(clientKey))
             .map(tokenInfo::withClient);
     }
 }
