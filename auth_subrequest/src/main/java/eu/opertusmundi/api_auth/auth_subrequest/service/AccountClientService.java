@@ -10,6 +10,7 @@ import javax.persistence.NoResultException;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import io.quarkus.cache.CacheResult;
 import io.smallrye.mutiny.Uni;
 
 import eu.opertusmundi.api_auth.auth_subrequest.repository.AccountClientRepository;
@@ -36,6 +37,7 @@ public class AccountClientService
      *   Otherwise, it returns a minimal representation carrying only the account id. 
      * @return
      */
+    @CacheResult(cacheName = "accountClientService.findByKey")
     public Uni<AccountClientDto> findByKey(@NotNull UUID key, boolean briefRepresentation)
     {
         return accountClientRepository.findByKey(key, !briefRepresentation)
