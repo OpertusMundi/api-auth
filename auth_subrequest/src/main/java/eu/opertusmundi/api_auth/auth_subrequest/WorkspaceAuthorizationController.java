@@ -1,10 +1,10 @@
 package eu.opertusmundi.api_auth.auth_subrequest;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
@@ -19,8 +19,12 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedException;
+import eu.opertusmundi.api_auth.auth_subrequest.model.BaseRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedForResourceException;
+import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedForWorkspace;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
+import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceType;
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountService;
 import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
@@ -32,6 +36,8 @@ import io.smallrye.mutiny.Uni;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +48,7 @@ import static eu.opertusmundi.api_auth.auth_subrequest.ExtraHttpHeaders.*;
  * Authorize requests for OGC services in the workspace of a provider user.
  */
 @Authenticated
-@Path("/authorize/{workspace:[_a-z][-_a-z0-9]*}")
+@Path("/authorize/{workspace:([a-z][-a-z0-9]*)?_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}")
 public class WorkspaceAuthorizationController
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkspaceAuthorizationController.class);
@@ -53,30 +59,15 @@ public class WorkspaceAuthorizationController
             "(?<providerAccountKey>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})" + ")", 
         Pattern.CASE_INSENSITIVE);
     
-    @lombok.Getter
-    @lombok.ToString
-    static class WorkspaceInfo
+    private static WorkspaceInfo workspaceInfoFromString(String workspaceString)
     {
-        final String prefix;
-        
-        final String providerAccountKey;
-        
-        WorkspaceInfo(String prefix, String providerAccountKey)
-        {
-            this.prefix = prefix;
-            this.providerAccountKey = Objects.requireNonNull(providerAccountKey);
+        final Matcher workspaceMatcher = WORKSPACE_PATTERN.matcher(workspaceString);
+        if (!workspaceMatcher.matches()) {
+            throw new IllegalArgumentException("workspace is malformed: [" + workspaceString + "]");
         }
-        
-        static WorkspaceInfo fromString(String workspace)
-        {
-            final Matcher workspaceMatcher = WORKSPACE_PATTERN.matcher(workspace);
-            if (!workspaceMatcher.matches()) {
-                throw new IllegalArgumentException("workspace is malformed: [" + workspace + "]");
-            } 
-            return new WorkspaceInfo(
-                workspaceMatcher.group("workspacePrefix"), 
-                workspaceMatcher.group("providerAccountKey"));
-        }
+        final WorkspaceType type = WorkspaceType.fromPrefix(workspaceMatcher.group("workspacePrefix"));
+        final String providerAccountKey = workspaceMatcher.group("providerAccountKey");
+        return new WorkspaceInfo(type, providerAccountKey);
     }
     
     @Context
@@ -95,30 +86,59 @@ public class WorkspaceAuthorizationController
     AccountService accountService;
     
     @Inject
-    Authorizer<WmsRequest> wmsAuthorizer;
+    @Named("publicWmsEndpointAuthorizer")
+    Authorizer<WmsRequest> publicWmsEndpointAuthorizer;
     
     @GET
     @Path("/wms")
     public Uni<RestResponse<?>> authorizeForWms(
         @HeaderParam(AUTH_REQUEST_REDIRECT_HEADER_NAME) final URI authRequestRedirect)
     {
+        final Supplier<WmsRequest> requestSupplier = 
+            () -> WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
+        return authorizeForRequest(requestSupplier, publicWmsEndpointAuthorizer);
+    }
+
+    private <R extends BaseRequest> Uni<RestResponse<?>> authorizeForRequest(
+        Supplier<? extends R> requestSupplier, Authorizer<R> publicEndpointAuthorizer)
+    {
         final String clientKey = clientKeyFromContext();
         final WorkspaceInfo workspaceInfo = workspaceInfoFromContext();
         final String requestId = requestIdFromContext();
-        final WmsRequest request = WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
         
         final Uni<AccountClientDto> consumerAccountClientUni = accountClientService.findByKey(clientKey, false /*brief*/);
-        final Uni<AccountDto> providerAccountUni = accountService.findByKey(workspaceInfo.providerAccountKey);
+        final Uni<AccountDto> providerAccountUni = accountService.findByKey(workspaceInfo.getProviderAccountKey());
         
         final Uni<Void> authorizationUni = consumerAccountClientUni.chain(consumerAccountClient -> {
-           return providerAccountUni.chain(providerAccount ->
-               wmsAuthorizer.authorize(consumerAccountClient, providerAccount, requestId, request)
-           ); 
+           return providerAccountUni.chain(providerAccount -> {
+               final var request = requestSupplier.get(); // parse request
+               final var workspaceType = workspaceInfo.getType();
+               final int consumerAccountId = consumerAccountClient.getAccountId();
+               final int providerAccountId = providerAccount.getId();
+               
+               if (consumerAccountId == providerAccountId) {
+                   // consumer is same with provider (success)
+                   return Uni.createFrom().nullItem();
+               } else if (workspaceType == WorkspaceType.PRIVATE) {
+                   // consumer is accessing a private workspace 
+                   final AccountDto consumerAccount = consumerAccountClient.getAccount();
+                   final int consumerParentAccountId = Optional.of(consumerAccount)
+                       .map(AccountDto::getParentId).orElse(-1);
+                   return (consumerParentAccountId == providerAccountId)? Uni.createFrom().nullItem() /*success*/: 
+                       Uni.createFrom().failure(new ConsumerNotAuthorizedForWorkspace(consumerAccount.getKey(), workspaceInfo)); 
+               } else if (workspaceType == WorkspaceType.PUBLIC) {
+                   // consumer is accessing a public workspace 
+                   return publicEndpointAuthorizer.authorize(consumerAccountClient, providerAccount, requestId, request);
+               } else {
+                   return Uni.createFrom().failure(
+                       new IllegalStateException("unknown workspace type: [" + workspaceType + "]"));
+               }
+           }); 
         });
         
         return authorizationUni.onItemOrFailure()
             .transform((item, ex) -> transformFailureFromAuthorization(
-                ex, clientKey, workspaceInfo.providerAccountKey, requestId));
+                ex, clientKey, workspaceInfo.getProviderAccountKey(), requestId));
     }
     
     private String clientKeyFromContext()
@@ -137,26 +157,27 @@ public class WorkspaceAuthorizationController
     private WorkspaceInfo workspaceInfoFromContext()
     {
         final MultivaluedMap<String, String> pathParameters = uriInfo.getPathParameters();
-        return WorkspaceInfo.fromString(pathParameters.getFirst("workspace"));
+        return workspaceInfoFromString(pathParameters.getFirst("workspace"));
     }
-    
+        
     private String requestIdFromContext()
     {
         return this.httpHeaders.getHeaderString(REQUEST_ID_HEADER_NAME);
     }
     
     private RestResponse<?> transformFailureFromAuthorization(
-        Throwable ex, String clientKey, String providerAccountKey, String requestId)
+        Throwable x, String clientKey, String providerAccountKey, String requestId)
     {
-        if (ex == null) {
+        if (x == null) {
             // no exception received: success
             return responseForSuccess();
-        } else if (ex instanceof ConsumerNotAuthorizedException) {
-            return responseForNotAuthorized(ex);
+        } else if (x instanceof ConsumerNotAuthorizedForResourceException 
+                || x instanceof ConsumerNotAuthorizedForWorkspace) {
+            return responseForNotAuthorized(x);
         } else {
             final String message = "Unexpected failure during authorization of client [" + clientKey + "]";
-            LOGGER.info(message, ex);
-            return responseForBadRequest(ex);
+            LOGGER.info(message, x);
+            return responseForBadRequest(x);
         }
     }
     

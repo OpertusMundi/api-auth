@@ -3,6 +3,12 @@ package eu.opertusmundi.api_auth.model;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Negative;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -22,8 +28,11 @@ public class AccountClientDto extends ClientDto
         super(key == null? null : key.toString());
     }
     
+    @NotNull 
+    @Positive
     private Integer accountId;
     
+    @NotNull
     private AccountDto account;
     
     public AccountClientDto withAccount(AccountDto account) 
@@ -32,6 +41,7 @@ public class AccountClientDto extends ClientDto
         return this;
     }
     
+    @NotBlank
     private String alias;
     
     private ZonedDateTime created;

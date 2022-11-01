@@ -3,6 +3,11 @@ package eu.opertusmundi.api_auth.model;
 import java.util.List;
 import java.util.UUID;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -11,9 +16,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_EMPTY)
 public class AccountDto
 {
+    @NotNull
+    @Positive
     private Integer id;
 
+    @NotNull
     private UUID key;
+    
+    @Positive
+    private Integer parentId;
     
     private AccountDto parent;
     
@@ -21,6 +32,8 @@ public class AccountDto
     
     private boolean active;
 
+    @NotNull
+    @Email
     private String email;
 
     private boolean emailVerified;
@@ -33,6 +46,4 @@ public class AccountDto
         return String.format("AccountDto {id=%s, key=%s, blocked=%s, active=%s, email=%s}", 
             id, key, blocked, active, email);
     }
-    
-    
 }

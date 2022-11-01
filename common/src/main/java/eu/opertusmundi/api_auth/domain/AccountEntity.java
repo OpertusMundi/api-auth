@@ -70,8 +70,11 @@ public class AccountEntity
         d.setId(id);
         d.setKey(key);
         
-        if (includeParent && parent != null) {
-            d.setParent(parent.toDto(false, false, false));
+        if (parent != null) {
+            d.setParentId(parent.id);
+            if (includeParent) {
+                d.setParent(parent.toDto(false, false, false));
+            }
         }
         
         d.setActive(active);

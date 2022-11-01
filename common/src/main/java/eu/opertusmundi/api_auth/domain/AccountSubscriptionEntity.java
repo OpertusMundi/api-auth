@@ -25,7 +25,7 @@ import eu.opertusmundi.api_auth.model.TopicCategory;
 @lombok.Getter
 @Entity(name = "AccountSubscription")
 @Immutable
-@Table(schema = "web", name = "`account_subscription`")
+@Table(schema = "web", name = "`account_active_subscription_view`")
 public class AccountSubscriptionEntity
 {
     @Id
@@ -46,9 +46,9 @@ public class AccountSubscriptionEntity
     @JoinColumn(name = "`provider`", nullable = false)
     private AccountEntity provider;
     
-    @NotNull
-    @Column(name = "`asset`", nullable = false)
-    private String asset;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "`asset`", nullable = false)
+    private AssetResourceEntity asset;
     
     @NotNull
     @Column(name = "`added_on`", nullable = false)
@@ -77,7 +77,7 @@ public class AccountSubscriptionEntity
     @Column(name = "`status`", nullable = false)
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status;
-    
+        
     public AccountSubscriptionDto toDto()
     {
         return toDto(false);
@@ -99,7 +99,7 @@ public class AccountSubscriptionEntity
                 d.setProvider(provider.toDto(false, false, false));
         }
         
-        d.setAsset(asset);
+        d.setAsset(asset.toDto(false));
         
         d.setAdded(added);
         d.setUpdated(updated);

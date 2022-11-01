@@ -23,23 +23,20 @@ import eu.opertusmundi.api_auth.model.ResourseSourceType;
 @lombok.Getter
 @Entity(name = "AssetResource")
 @Immutable
-@Table(schema = "file", name = "`asset_resource`")
+@Table(schema = "file", name = "`asset_published_resource_view`")
 public class AssetResourceEntity
 {
-    @Id
-    @Column(name = "`id`", updatable = false)
-    private Integer id;
-
-    @NotNull
-    @Column(name = "`key`", updatable = false, unique = true)
-    private String key;
-    
     /**
      * The persistent identifier (pid) for an asset
      */
+    @Id
     @Column(name = "`pid`")
     private String pid;
     
+    @NotNull
+    @Column(name = "`key`", updatable = false, unique = true)
+    private String key;
+
     @NotNull
     @Column(name = "`created_on`", nullable = false)
     private ZonedDateTime created;
@@ -109,9 +106,8 @@ public class AssetResourceEntity
     
     public AssetResourceDto toDto(boolean convertAccountToDto)
     {
-        final AssetResourceDto d = new AssetResourceDto(id, key);
+        final AssetResourceDto d = new AssetResourceDto(key, pid);
         
-        d.setPid(pid);
         d.setCreated(created);
         
         if (uploadedBy != null) {

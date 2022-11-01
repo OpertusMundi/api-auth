@@ -5,7 +5,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import eu.opertusmundi.api_auth.auth_subrequest.model.BaseRequest;
-import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedException;
+import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedForResourceException;
+import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceType;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
 import io.smallrye.mutiny.Uni;
@@ -22,12 +23,12 @@ public interface Authorizer <R extends BaseRequest>
      * 
      * @return An empty {@code Uni} on success, otherwise a failed {@code Uni} carrying an exception. 
      * 
-     * @throws ConsumerNotAuthorizedException when consumer is denied access to target resource
+     * @throws ConsumerNotAuthorizedForResourceException when consumer is denied access to target resource
      * @throws IllegalStateException when a more generic error has occurred
      */
     public Uni<Void> authorize(
-        @NotNull AccountClientDto consumerAccountClient, 
-        @NotNull AccountDto providerAccount, 
+        @NotNull @Valid AccountClientDto consumerAccountClient, 
+        @NotNull @Valid AccountDto providerAccount,
         @NotBlank String requestId, 
-        @NotNull R request);
+        @NotNull @Valid R request);
 }

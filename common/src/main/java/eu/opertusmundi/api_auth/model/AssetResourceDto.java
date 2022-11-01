@@ -8,21 +8,18 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @lombok.Getter
 @lombok.Setter
 @lombok.NoArgsConstructor
-@lombok.ToString
 @JsonInclude(Include.NON_EMPTY)
 public class AssetResourceDto
 {
-    private Integer id;
-
     private String key;
     
-    public AssetResourceDto(Integer id, String key)
+    private String pid;
+    
+    public AssetResourceDto(String key, String pid)
     {
-        this.id = id;
+        this.pid = pid;
         this.key = key;
     }
-    
-    private String pid;
     
     private ZonedDateTime created;
     
@@ -50,4 +47,13 @@ public class AssetResourceDto
     private String parentKey;
     
     private String path;
+    
+    @Override
+    public String toString()
+    {
+        return String.format("AssetResourceDto "
+            + "{key=%s, pid=%s, created=%s, uploadedByAccountId=%s, uploadedBy=%s, fileName=%s, fileSize=%s, category=%s, fileFormat=[%s], fileEncoding=%s, crs=%s, sourceType=%s, parentKey=%s, path=%s}",
+            key, pid, created, uploadedByAccountId, uploadedBy, fileName, fileSize, category, fileFormat, fileEncoding,
+            crs, sourceType, parentKey, path);
+    }
 }

@@ -9,6 +9,10 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -107,6 +111,7 @@ public class WmsGetMapRequest extends WmsRequest
         }
     }
     
+    @Size(min = 1, max = 25)
     protected List<String> layerNames = Collections.emptyList();
 
     public static final String LAYERS_PARAMETER_NAME = "layers";
@@ -124,14 +129,17 @@ public class WmsGetMapRequest extends WmsRequest
     protected static final Predicate<String> SRS_VALIDATOR = 
         Pattern.compile("epsg:([0-9]+)", Pattern.CASE_INSENSITIVE).asMatchPredicate();
     
+    @NotNull
     protected BBox bbox;
     
     public static final String BBOX_PARAMETER_NAME = "bbox";
     
+    @Positive
     protected int width;
     
     public static final String WIDTH_PARAMETER_NAME = "width";
     
+    @Positive
     protected int height;
     
     public static final String HEIGHT_PARAMETER_NAME = "height";

@@ -36,10 +36,7 @@ public class AccountSubscriptionDto
      */
     private Integer providerAccountId;
     
-    /**
-     * The persistent-identifier (pid) of the asset
-     */
-    private String asset;
+    private AssetResourceDto asset;
     
     private ZonedDateTime added;
 
