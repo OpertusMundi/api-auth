@@ -29,8 +29,7 @@ public class AccountSubscriptionRepository implements PanacheRepositoryBase<Acco
         
         PanacheQuery<AccountSubscriptionEntity> q;
         if (fetchProviderAndConsumer) {
-            q = this.find("FROM AccountSubscription s " +
-                " JOIN FETCH s.consumer JOIN FETCH s.provider WHERE s.key = ?1", key);
+            q = this.find("FROM AccountSubscription s JOIN FETCH s.consumer JOIN FETCH s.provider WHERE s.key = ?1", key);
         } else {
             q = this.find("FROM AccountSubscription s WHERE s.key = ?1", key);
         }
@@ -113,22 +112,37 @@ public class AccountSubscriptionRepository implements PanacheRepositoryBase<Acco
     public Uni<List<AccountSubscriptionEntity>> findByConsumerAndAssetKey(int consumerAccountId, String assetKey)
     {
         PanacheQuery<AccountSubscriptionEntity> q = this.find(
-            "FROM AccountSubscription s JOIN FETCH s.asset a "
-                + "WHERE s.consumer.id = ?1 AND a.key = ?2", consumerAccountId, assetKey);
+            "FROM AccountSubscription s JOIN FETCH s.asset a WHERE s.consumer.id = ?1 AND a.key = ?2", 
+            consumerAccountId, assetKey);
+        return q.list();
+    }
+    
+    @ReactiveTransactional
+    public Uni<List<AccountSubscriptionEntity>> findByConsumerAndProviderAndAssetKey(
+        int consumerAccountId, int providerAccountId, String assetKey)
+    {
+        PanacheQuery<AccountSubscriptionEntity> q = this.find(
+            "FROM AccountSubscription s JOIN FETCH s.asset a WHERE s.consumer.id = ?1 AND s.provider.id = ?2 AND a.key = ?3", 
+             consumerAccountId, providerAccountId, assetKey);
         return q.list();
     }
     
     @ReactiveTransactional
     public Uni<List<AccountSubscriptionEntity>> findByConsumerAndAssetKeys(int consumerAccountId, List<String> assetKeys)
     {
-        if (assetKeys.isEmpty())
-            return Uni.createFrom().item(Collections::emptyList);
-        else if (assetKeys.size() == 1) // prefer a simpler WHERE clause  
-            return this.findByConsumerAndAssetKey(consumerAccountId, assetKeys.get(0));
-        
         PanacheQuery<AccountSubscriptionEntity> q = this.find(
-            "FROM AccountSubscription s JOIN FETCH s.asset a "
-                + "WHERE s.consumer.id = ?1 AND a.key IN (?2)", consumerAccountId, assetKeys);
+            "FROM AccountSubscription s JOIN FETCH s.asset a WHERE s.consumer.id = ?1 AND a.key IN (?2)", 
+            consumerAccountId, assetKeys);
+        return q.list();
+    }
+    
+    @ReactiveTransactional
+    public Uni<List<AccountSubscriptionEntity>> findByConsumerAndProviderAndAssetKeys(
+        int consumerAccountId, int providerAccountId, List<String> assetKeys)
+    {
+        PanacheQuery<AccountSubscriptionEntity> q = this.find(
+            "FROM AccountSubscription s JOIN FETCH s.asset a WHERE s.consumer.id = ?1 AND s.provider.id = ?2 AND a.key IN (?3)", 
+            consumerAccountId, providerAccountId, assetKeys);
         return q.list();
     }
     
@@ -136,8 +150,8 @@ public class AccountSubscriptionRepository implements PanacheRepositoryBase<Acco
     public Uni<List<AccountSubscriptionEntity>> findByConsumerAndAsset(int consumerAccountId, String assetPid)
     {
         PanacheQuery<AccountSubscriptionEntity> q = this.find(
-            "FROM AccountSubscription s JOIN FETCH s.asset a "
-                + "WHERE s.consumer.id = ?1 AND a.pid = ?2", consumerAccountId, assetPid);
+            "FROM AccountSubscription s JOIN FETCH s.asset a WHERE s.consumer.id = ?1 AND a.pid = ?2", 
+            consumerAccountId, assetPid);
         return q.list();
     }
     
@@ -145,8 +159,8 @@ public class AccountSubscriptionRepository implements PanacheRepositoryBase<Acco
     public Uni<List<AccountSubscriptionEntity>> findByConsumerAndProvider(int consumerAccountId, int providerAccountId)
     {
         PanacheQuery<AccountSubscriptionEntity> q = this.find(
-            "FROM AccountSubscription s JOIN FETCH s.asset a "
-                + "WHERE s.consumer.id = ?1 AND s.provider.id = ?2", consumerAccountId, providerAccountId);
+            "FROM AccountSubscription s JOIN FETCH s.asset a WHERE s.consumer.id = ?1 AND s.provider.id = ?2", 
+            consumerAccountId, providerAccountId);
         return q.list();
     }
 }

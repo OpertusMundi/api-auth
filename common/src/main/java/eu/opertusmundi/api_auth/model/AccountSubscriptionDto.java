@@ -38,6 +38,11 @@ public class AccountSubscriptionDto
     
     private AssetResourceDto asset;
     
+    public String getAssetKey()
+    {
+        return asset == null? null : asset.getKey();
+    }
+    
     private ZonedDateTime added;
 
     private ZonedDateTime updated;

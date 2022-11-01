@@ -1,8 +1,7 @@
 package eu.opertusmundi.api_auth.auth_subrequest.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -24,7 +23,6 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
 import eu.opertusmundi.api_auth.model.AccountSubscriptionDto;
-import eu.opertusmundi.api_auth.model.AssetResourceDto;
 
 
 @ApplicationScoped
@@ -52,22 +50,13 @@ public class PublicWmsEndpointAuthorizer extends OwsAuthorizerBase implements Au
         if (request instanceof WmsGetMapRequest) {
             final WmsGetMapRequest getMapRequest = (WmsGetMapRequest) request;
             final List<String> assetKeys = assetKeysFromLayerNames(getMapRequest.getLayerNames());
-            return accountSubscriptionService.findByConsumerAndAssetKeys(consumerAccountId, assetKeys)
-                .map(subscriptions -> {
-                    final List<String> remainingAssetKeys = new ArrayList<>(assetKeys);
-                    for (final AccountSubscriptionDto subscription: subscriptions) {
-                        if (subscription.getProviderAccountId() == providerAccountId) {
-                            final AssetResourceDto asset = Objects.requireNonNull(subscription.getAsset());
-                            if (remainingAssetKeys.remove(asset.getKey())) {
-                                if (remainingAssetKeys.isEmpty())
-                                    break;
-                            }
-                        }
-                    }
-                    if (remainingAssetKeys.isEmpty()) {
-                        return true; // success
-                    } else {
-                        throw new ConsumerNotAuthorizedForResourceException(consumerAccount.getKey(), remainingAssetKeys.get(0));
+            return accountSubscriptionService.findByConsumerAndProviderAndAssetKeys(consumerAccountId, providerAccountId, assetKeys)
+                .invoke(subscriptions -> {
+                    final List<String> assetKeysFromSubscriptions = subscriptions.stream()
+                        .map(AccountSubscriptionDto::getAssetKey).collect(Collectors.toList());
+                    for (final String assetKey: assetKeys) {
+                        if (!assetKeysFromSubscriptions.contains(assetKey))
+                            throw new ConsumerNotAuthorizedForResourceException(consumerAccount.getKey(), assetKey);
                     }
                 })
                 .replaceWithVoid();
@@ -77,14 +66,10 @@ public class PublicWmsEndpointAuthorizer extends OwsAuthorizerBase implements Au
         } else if (request instanceof WmsGetLegendGraphicRequest) {
             final WmsGetLegendGraphicRequest getLegendGraphicRequest = (WmsGetLegendGraphicRequest) request;
             final String assetKey = assetKeyFromLayerName(getLegendGraphicRequest.getLayerName());
-            return accountSubscriptionService.findByConsumerAndAssetKey(consumerAccountId, assetKey)
-                .map(subscriptions -> {
-                    for (final AccountSubscriptionDto subscription: subscriptions) {
-                        if (subscription.getProviderAccountId() == providerAccountId)
-                            return true; // success
-                    }
-                    // no suitable subscription found
-                    throw new ConsumerNotAuthorizedForResourceException(consumerAccount.getKey(), assetKey);
+            return accountSubscriptionService.findByConsumerAndProviderAndAssetKey(consumerAccountId, providerAccountId, assetKey)
+                .invoke(subscriptions -> {
+                    if (subscriptions.isEmpty())
+                        throw new ConsumerNotAuthorizedForResourceException(consumerAccount.getKey(), assetKey);
                 })
                 .replaceWithVoid();
         } else if (request instanceof WmsDescribeLayerRequest) {

@@ -116,9 +116,23 @@ public class AccountSubscriptionService
             .map(defaultResultsMapper);
     }
     
+    public Uni<List<AccountSubscriptionDto>> findByConsumerAndProviderAndAssetKey(
+        @Positive int consumerAccountId, @Positive int providerAccountId, @NotBlank String assetKey)
+    {
+        return accountSubscriptionRepository.findByConsumerAndProviderAndAssetKey(consumerAccountId, providerAccountId, assetKey)
+            .map(defaultResultsMapper);
+    }
+    
     public Uni<List<AccountSubscriptionDto>> findByConsumerAndAssetKeys(@Positive int consumerAccountId, @NotEmpty List<String> assetKeys)
     {
         return accountSubscriptionRepository.findByConsumerAndAssetKeys(consumerAccountId, assetKeys)
+            .map(defaultResultsMapper);
+    }
+    
+    public Uni<List<AccountSubscriptionDto>> findByConsumerAndProviderAndAssetKeys(
+        @Positive int consumerAccountId, @Positive int providerAccountId, @NotEmpty List<String> assetKeys)
+    {
+        return accountSubscriptionRepository.findByConsumerAndProviderAndAssetKeys(consumerAccountId, providerAccountId, assetKeys)
             .map(defaultResultsMapper);
     }
     
