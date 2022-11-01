@@ -4,8 +4,8 @@ version: '3.6'
 
 services:
 
-  'app':
-    image: opertusmundi/rest-auth:${VERSION}
+  'auth_subrequest':
+    image: opertusmundi/auth-subrequest:${VERSION}
     build:
       context: .
       dockerfile: ./src/main/docker/Dockerfile.jvm
