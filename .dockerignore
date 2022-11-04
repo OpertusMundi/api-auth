@@ -1,6 +1,9 @@
-*
-!cacerts/*.crt
-!target/*-runner
-!target/*-runner.jar
-!target/lib/*
-!target/quarkus-app/*
+work/
+target/*
+common/target/*
+auth_subrequest/target
+auth_subrequest/config
+auth_subrequest/secrets
+.git/*
+.settings/*
+cli/*
