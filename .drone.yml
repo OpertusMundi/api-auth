@@ -1,0 +1,44 @@
+kind: pipeline
+type: docker
+name: default
+
+environment:
+  {}
+
+steps:
+  
+- name: tests
+  image: maven:3.6.3-openjdk-11 
+  when:
+    event:
+    - push
+  environment: {}
+  volumes:
+  - name: maven-repo
+    path: /root/.m2
+  commands:
+  - ls -hal
+  - mvn -version
+
+- name: publish-image
+  image: plugins/docker
+  when:
+    event:
+    - tag
+  settings:
+    debug: true
+    context: .
+    dockerfile: auth_subrequest.dockerfile
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo: opertusmundi/auth-subrequest
+    tags:
+    - "${DRONE_SEMVER_SHORT}"
+    - "${DRONE_SEMVER_MAJOR}.${DRONE_SEMVER_MINOR}"
+    mirror: http://registry-mirror:5000
+
+volumes:
+- name: maven-repo
+  temp: {}
