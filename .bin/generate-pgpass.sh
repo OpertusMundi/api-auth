@@ -1,0 +1,6 @@
+#!/bin/sh
+set -u -e
+
+echo "${DATABASE_HOST}:5432:*:postgres:${DATABASE_POSTGRES_PASSWORD}"
+echo "${DATABASE_HOST}:5432:*:${DATABASE_USER}:${DATABASE_PASSWORD}"
+

@@ -3,22 +3,50 @@ type: docker
 name: default
 
 environment:
-  {}
+  DATABASE_HOST: &database_host postgres-1
+  DATABASE_NAME: opertusmundi
+  DATABASE_USER: opertusmundi
 
 steps:
-  
-- name: tests
+
+- name: setup-database
+  image: postgres:10.14-alpine
+  when:
+    event:
+    - push
+  environment:
+    DATABASE_POSTGRES_PASSWORD:
+      from_secret: database_postgres_password
+    DATABASE_PASSWORD:
+      from_secret: database_password
+    PGHOST: *database_host
+  commands:
+  - touch ~/.pgpass
+  - chmod og-rwx ~/.pgpass
+  - ./.bin/generate-pgpass.sh >~/.pgpass
+  - (t=30; while ! pg_isready -U postgres -t 5; do t=$((t - 1)); test $${t} -ne 0; sleep 3s; echo '.'; done)
+  - ./.bin/generate-database-setup.sh | psql -U postgres
+  - psql -U postgres -l -A -t
+  - psql -U $${DATABASE_USER} -d $${DATABASE_NAME} -A -t -c '\d'
+
+- name: surefire-tests
   image: maven:3.6.3-openjdk-11 
   when:
     event:
     - push
-  environment: {}
+  environment:
+    _TEST_QUARKUS_DATASOURCE_PASSWORD:
+      from_secret: database_password
   volumes:
   - name: maven-repo
     path: /root/.m2
   commands:
-  - ls -hal
+  - export _TEST_QUARKUS_DATASOURCE_USERNAME=$${DATABASE_USER}
+  - export _TEST_QUARKUS_DATASOURCE_REACTIVE_URL=vertx-reactive:postgresql://$${DATABASE_HOST}:5432/$${DATABASE_NAME}
+  - export _TEST_QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION=create
+  - export _TEST_QUARKUS_HIBERNATE_ORM_LOG_SQL=t
   - mvn -version
+  - mvn test -B
 
 - name: publish-image
   image: plugins/docker
@@ -38,6 +66,13 @@ steps:
     - "${DRONE_SEMVER_SHORT}"
     - "${DRONE_SEMVER_MAJOR}.${DRONE_SEMVER_MINOR}"
     mirror: http://registry-mirror:5000
+
+services:
+- name: postgres-1
+  image: postgis/postgis:10-3.0-alpine
+  environment:
+    POSTGRES_PASSWORD:
+      from_secret: database_postgres_password
 
 volumes:
 - name: maven-repo

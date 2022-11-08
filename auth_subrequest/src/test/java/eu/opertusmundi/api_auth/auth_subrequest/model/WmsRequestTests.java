@@ -1,4 +1,4 @@
-package eu.opertusmundi.api_auth.auth_subrequest.unit;
+package eu.opertusmundi.api_auth.auth_subrequest.model;
 
 import java.net.URI;
 import java.util.List;
