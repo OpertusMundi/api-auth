@@ -33,6 +33,7 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.http.HttpMethod;
 
 import java.net.URI;
 import java.util.Objects;
@@ -92,8 +93,14 @@ public class WorkspaceAuthorizationController
     @GET
     @Path("/wms")
     public Uni<RestResponse<?>> authorizeForWms(
+        @HeaderParam(ORIG_METHOD_HEADER_NAME) final String origRequestMethod,
         @HeaderParam(AUTH_REQUEST_REDIRECT_HEADER_NAME) final URI authRequestRedirect)
     {
+        if (!HttpMethod.GET.name().equals(origRequestMethod)) {
+            return Uni.createFrom().item(responseForBadRequest(
+                "only GET is allowed for WMS requests [origRequestMethod=" + origRequestMethod + "]"));
+        }
+        
         final Supplier<WmsRequest> requestSupplier = 
             () -> WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
         return authorizeForRequest(requestSupplier, publicWmsEndpointAuthorizer);
