@@ -39,7 +39,7 @@ public class PublicWmsEndpointAuthorizer extends OwsAuthorizerBase implements Au
         @NotNull @Valid WmsRequest request)
     {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("authorize(): [\n\tconsumerAccountClient={}\n\tproviderAccount={}\n\trequestId={}\n\trequest={}]", 
+            LOGGER.debug("authorize(): [consumerAccountClient={} providerAccount={} requestId={} request={}]", 
                 consumerAccountClient, providerAccount, requestId, request);
         }
         

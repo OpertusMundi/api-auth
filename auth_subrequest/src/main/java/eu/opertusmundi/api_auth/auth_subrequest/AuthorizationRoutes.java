@@ -35,7 +35,7 @@ public class AuthorizationRoutes
             routingContext.response().setStatusCode(RestResponse.StatusCode.BAD_REQUEST).end();
         } else {
             final String pathToReroute = "/authorize" + authRequestPath;
-            LOGGER.info("Rerouting to {} [req-id={}]", pathToReroute, requestId);
+            LOGGER.info("Rerouting to {} [requestId={}]", pathToReroute, requestId);
             routingContext.reroute(pathToReroute);
         }
     }

@@ -12,7 +12,6 @@ import javax.validation.constraints.NotNull;
 import eu.opertusmundi.api_auth.auth_subrequest.repository.AccountRepository;
 import eu.opertusmundi.api_auth.domain.AccountEntity;
 import eu.opertusmundi.api_auth.model.AccountDto;
-import io.quarkus.cache.CacheResult;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
@@ -36,7 +35,6 @@ public class AccountService
         return this.findByKey(key);
     }
         
-    @CacheResult(cacheName = "accountService.findByKey")
     public Uni<AccountDto> findByKey(@NotNull UUID key)
     {
         return accountRepository.findByKey(key, false /*fetchAssociatedClients*/)
@@ -45,7 +43,6 @@ public class AccountService
                 .transform(ex -> new IllegalStateException("no account for key: [" + key + "]"));
     }
     
-    @CacheResult(cacheName = "accountService.findById")
     public Uni<AccountDto> findById(int id)
     {
         return accountRepository.findById(id, false /*fetchAssociatedClients*/)
