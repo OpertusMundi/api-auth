@@ -12,6 +12,10 @@ RUN mvn -B -DskipTests install
 
 FROM eclipse-temurin:11-jre-alpine 
 
+ARG git_commit=
+
+ENV GIT_COMMIT="${git_commit}"
+
 WORKDIR /app/
 
 RUN addgroup quarkus && adduser -H -D -G quarkus quarkus
