@@ -17,9 +17,9 @@ public class WfsDescribeFeatureTypeRequest extends WfsRequest
     @Size(min = 1, max = 25)
     protected List<String> layerNames = Collections.emptyList();
 
-    public static final String TYPENAME_PARAMETER_NAME = "typeName";
+    public static final String LAYER_NAMES_V1_PARAMETER_NAME = "typeName";
     
-    public static final String TYPENAMES_PARAMETER_NAME = "typeNames";
+    public static final String LAYER_NAMES_V2_PARAMETER_NAME = "typeNames";
     
     public WfsDescribeFeatureTypeRequest(ServiceVersion version)
     {
@@ -35,10 +35,9 @@ public class WfsDescribeFeatureTypeRequest extends WfsRequest
     protected void setFromMap(Map<String, String> queryParameters)
     {
         final String layerNamesAsString = queryParameters.get(serviceVersion == ServiceVersion.V_2_0_0? 
-            TYPENAMES_PARAMETER_NAME : TYPENAME_PARAMETER_NAME);
-        if (!StringUtils.isBlank(layerNamesAsString)) {
+            LAYER_NAMES_V2_PARAMETER_NAME : LAYER_NAMES_V1_PARAMETER_NAME);
+        if (!StringUtils.isBlank(layerNamesAsString))
             setLayerNames(StringUtils.split(layerNamesAsString, ','));
-        }
     }
     
     void setLayerNames(List<String> layerNames)
