@@ -9,6 +9,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,42 +44,26 @@ public class PublicWmsEndpointAuthorizer extends OwsAuthorizerBase implements Au
                 consumerAccountClient, providerAccount, requestId, request);
         }
         
-        final int consumerAccountId = consumerAccountClient.getAccountId();
         final AccountDto consumerAccount = consumerAccountClient.getAccount();
-        final int providerAccountId = providerAccount.getId();
         
         if (request instanceof WmsGetMapRequest) {
             final WmsGetMapRequest getMapRequest = (WmsGetMapRequest) request;
-            final List<String> assetKeys = assetKeysFromLayerNames(getMapRequest.getLayerNames());
-            return accountSubscriptionService.findByConsumerAndProviderAndAssetKeys(consumerAccountId, providerAccountId, assetKeys)
-                .invoke(subscriptions -> {
-                    final List<String> assetKeysFromSubscriptions = subscriptions.stream()
-                        .map(AccountSubscriptionDto::getAssetKey).collect(Collectors.toList());
-                    for (final String assetKey: assetKeys) {
-                        if (!assetKeysFromSubscriptions.contains(assetKey))
-                            throw new ConsumerNotAuthorizedForResourceException(consumerAccount.getKey(), assetKey);
-                    }
-                })
-                .replaceWithVoid();
+            final List<String> assetKeys = extractAssetKeysFromLayerNames(getMapRequest.getLayerNames());
+            return checkAssetKeysFromSubscriptions(consumerAccount, providerAccount, assetKeys);
         } else if (request instanceof WmsGetCapabilitiesRequest) {
             // success (GetCapabilities is allowed for all consumers)
             return Uni.createFrom().nullItem();
         } else if (request instanceof WmsGetLegendGraphicRequest) {
             final WmsGetLegendGraphicRequest getLegendGraphicRequest = (WmsGetLegendGraphicRequest) request;
-            final String assetKey = assetKeyFromLayerName(getLegendGraphicRequest.getLayerName());
-            return accountSubscriptionService.findByConsumerAndProviderAndAssetKey(consumerAccountId, providerAccountId, assetKey)
-                .invoke(subscriptions -> {
-                    if (subscriptions.isEmpty())
-                        throw new ConsumerNotAuthorizedForResourceException(consumerAccount.getKey(), assetKey);
-                })
-                .replaceWithVoid();
+            final String assetKey = extractAssetKeyFromLayerName(getLegendGraphicRequest.getLayerName());
+            return checkAssetKeyFromSubscriptions(consumerAccount, providerAccount, assetKey);
         } else if (request instanceof WmsDescribeLayerRequest) {
             // success (DescribeLayer is allowed for all consumers)
             return Uni.createFrom().nullItem();
         } else {
             // unsupported type of request
             return Uni.createFrom().failure(
-                new IllegalStateException("unknown type of WMS request: [" + request.getRequest() + "]" ));
+                new IllegalStateException("unsupported type of WMS request: [" + request.getRequest() + "]" ));
         }
     }
 }

@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @see https://docs.geoserver.org/latest/en/user/services/wfs/reference.html#describefeaturetype
  */
+@lombok.Getter
 public class WfsDescribeFeatureTypeRequest extends WfsRequest
 {
     @Size(min = 1, max = 25)

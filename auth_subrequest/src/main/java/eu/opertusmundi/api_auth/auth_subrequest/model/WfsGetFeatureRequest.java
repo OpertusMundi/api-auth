@@ -18,6 +18,7 @@ import lombok.NonNull;
 /**
  * @see https://docs.geoserver.org/latest/en/user/services/wfs/reference.html#getfeature
  */
+@lombok.Getter
 public class WfsGetFeatureRequest extends WfsRequest
 {
     /**

@@ -1,5 +1,7 @@
 package eu.opertusmundi.api_auth.auth_subrequest.service;
 
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import javax.validation.Valid;
@@ -9,6 +11,9 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.opertusmundi.api_auth.auth_subrequest.model.WfsDescribeFeatureTypeRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.WfsGetCapabilitiesRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.WfsGetFeatureRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
@@ -32,8 +37,24 @@ public class PublicWfsEndpointAuthorizer extends OwsAuthorizerBase implements Au
                 consumerAccountClient, providerAccount, requestId, request);
         }
         
-        // TODO
-        return Uni.createFrom().nullItem();
+        final AccountDto consumerAccount = consumerAccountClient.getAccount();
+        
+        if (request instanceof WfsGetFeatureRequest) {
+            final WfsGetFeatureRequest getFeatureRequest = (WfsGetFeatureRequest) request;
+            final List<String> assetKeys = extractAssetKeysFromLayerNames(getFeatureRequest.getLayerNames());
+            return checkAssetKeysFromSubscriptions(consumerAccount, providerAccount, assetKeys);
+        } else if (request instanceof WfsDescribeFeatureTypeRequest) {
+            final WfsDescribeFeatureTypeRequest describeFeatureTypeRequest = (WfsDescribeFeatureTypeRequest) request;
+            final List<String> assetKeys = extractAssetKeysFromLayerNames(describeFeatureTypeRequest.getLayerNames());
+            return checkAssetKeysFromSubscriptions(consumerAccount, providerAccount, assetKeys);
+        } else if (request instanceof WfsGetCapabilitiesRequest) {
+            // success (GetCapabilities is allowed for all consumers)
+            return Uni.createFrom().nullItem();
+        } else {
+            // unsupported type of request
+            return Uni.createFrom().failure(
+                new IllegalStateException("unsupported type of WFS request: [" + request.getRequest() + "]" ));
+        }
     }
 
 }
