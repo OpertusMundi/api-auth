@@ -1,8 +1,10 @@
-package eu.opertusmundi.api_auth.auth_subrequest.model;
+package eu.opertusmundi.api_auth.auth_subrequest.model.exception;
 
 import java.util.UUID;
 
-public class ConsumerNotAuthorizedForWorkspace extends RuntimeException
+import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
+
+public class ConsumerNotAuthorizedForWorkspaceException extends RuntimeException
 {
     private static final long serialVersionUID = 1L;
 
@@ -12,7 +14,7 @@ public class ConsumerNotAuthorizedForWorkspace extends RuntimeException
     @lombok.Getter
     private final WorkspaceInfo workspaceInfo;
     
-    public ConsumerNotAuthorizedForWorkspace(UUID consumerAccountKey, WorkspaceInfo workspaceInfo)
+    public ConsumerNotAuthorizedForWorkspaceException(UUID consumerAccountKey, WorkspaceInfo workspaceInfo)
     {
         super(String.format("consumer [%s] is not authorized to access workspace %s", 
             consumerAccountKey, workspaceInfo));

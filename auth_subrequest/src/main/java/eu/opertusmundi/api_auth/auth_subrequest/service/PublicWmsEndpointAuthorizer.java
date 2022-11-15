@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory;
 
 import io.smallrye.mutiny.Uni;
 
-import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsDescribeLayerRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetCapabilitiesRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetLegendGraphicRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetMapRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
 import eu.opertusmundi.api_auth.model.AccountSubscriptionDto;

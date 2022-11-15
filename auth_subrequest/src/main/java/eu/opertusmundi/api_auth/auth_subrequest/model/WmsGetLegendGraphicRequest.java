@@ -51,14 +51,14 @@ public class WmsGetLegendGraphicRequest extends WmsRequest
     
     public static final String LEGENDOPTIONS_PARAMETER_NAME = "legend_options";
     
-    public WmsGetLegendGraphicRequest(WmsRequest.ServiceVersion version)
+    public WmsGetLegendGraphicRequest(ServiceVersion version)
     {
-        super(version, WmsRequest.OperationType.GET_LEGEND_GRAPHIC);
+        super(version, OperationType.GET_LEGEND_GRAPHIC);
     }
     
     public WmsGetLegendGraphicRequest()
     {
-        super(WmsRequest.OperationType.GET_LEGEND_GRAPHIC);
+        super(OperationType.GET_LEGEND_GRAPHIC);
     }
 
     @Override

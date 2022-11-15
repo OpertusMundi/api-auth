@@ -17,7 +17,9 @@ public class WmsDescribeLayerRequest extends WmsRequest
     public enum OutputFormat
     {
         TEXT("text/xml"),
+        
         GML2("application/vnd.ogc.wms_xml"),
+        
         JSON("application/json");
         
         private final String format;

@@ -167,14 +167,14 @@ public class WmsGetMapRequest extends WmsRequest
     
     public static final String SLDBODY_PARAMETER_NAME = "sld_body";
     
-    public WmsGetMapRequest(WmsRequest.ServiceVersion version)
+    public WmsGetMapRequest(ServiceVersion version)
     {
-        super(version, WmsRequest.OperationType.GET_MAP);
+        super(version, OperationType.GET_MAP);
     }
     
     public WmsGetMapRequest()
     {
-        super(WmsRequest.OperationType.GET_MAP);
+        super(OperationType.GET_MAP);
     }
 
     @Override

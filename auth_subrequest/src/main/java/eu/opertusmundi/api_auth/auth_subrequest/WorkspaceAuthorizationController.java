@@ -20,11 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.opertusmundi.api_auth.auth_subrequest.model.BaseRequest;
-import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedForResourceException;
-import eu.opertusmundi.api_auth.auth_subrequest.model.ConsumerNotAuthorizedForWorkspace;
+import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceType;
+import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
+import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForWorkspaceException;
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountService;
 import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
@@ -90,6 +91,10 @@ public class WorkspaceAuthorizationController
     @Named("publicWmsEndpointAuthorizer")
     Authorizer<WmsRequest> publicWmsEndpointAuthorizer;
     
+    @Inject
+    @Named("publicWfsEndpointAuthorizer")
+    Authorizer<WfsRequest> publicWfsEndpointAuthorizer;
+    
     @GET
     @Path("/wms")
     public Uni<RestResponse<?>> authorizeForWms(
@@ -98,12 +103,28 @@ public class WorkspaceAuthorizationController
     {
         if (!HttpMethod.GET.name().equals(origRequestMethod)) {
             return Uni.createFrom().item(responseForBadRequest(
-                "only GET is allowed for WMS requests [origRequestMethod=" + origRequestMethod + "]"));
+                "only GET (KVP-style) is allowed for WMS requests [origRequestMethod=" + origRequestMethod + "]"));
         }
         
         final Supplier<WmsRequest> requestSupplier = 
             () -> WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
         return authorizeForRequest(requestSupplier, publicWmsEndpointAuthorizer);
+    }
+    
+    @GET
+    @Path("/wfs")
+    public Uni<RestResponse<?>> authorizeForWfs(
+        @HeaderParam(ORIG_METHOD_HEADER_NAME) final String origRequestMethod,
+        @HeaderParam(AUTH_REQUEST_REDIRECT_HEADER_NAME) final URI authRequestRedirect)
+    {
+        if (!HttpMethod.GET.name().equals(origRequestMethod)) {
+            return Uni.createFrom().item(responseForBadRequest(
+                "only GET (KVP-style) is allowed for WFS requests [origRequestMethod=" + origRequestMethod + "]"));
+        }
+        
+        final Supplier<WfsRequest> requestSupplier = 
+            () -> WfsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
+        return authorizeForRequest(requestSupplier, publicWfsEndpointAuthorizer);
     }
 
     private <R extends BaseRequest> Uni<RestResponse<?>> authorizeForRequest(
@@ -132,7 +153,7 @@ public class WorkspaceAuthorizationController
                    final int consumerParentAccountId = Optional.of(consumerAccount)
                        .map(AccountDto::getParentId).orElse(-1);
                    return (consumerParentAccountId == providerAccountId)? Uni.createFrom().nullItem() /*success*/: 
-                       Uni.createFrom().failure(new ConsumerNotAuthorizedForWorkspace(consumerAccount.getKey(), workspaceInfo)); 
+                       Uni.createFrom().failure(new ConsumerNotAuthorizedForWorkspaceException(consumerAccount.getKey(), workspaceInfo)); 
                } else if (workspaceType == WorkspaceType.PUBLIC) {
                    // consumer is accessing a public workspace 
                    return publicEndpointAuthorizer.authorize(consumerAccountClient, providerAccount, requestId, request);
@@ -179,7 +200,7 @@ public class WorkspaceAuthorizationController
             // no exception received: success
             return responseForSuccess();
         } else if (x instanceof ConsumerNotAuthorizedForResourceException 
-                || x instanceof ConsumerNotAuthorizedForWorkspace) {
+                || x instanceof ConsumerNotAuthorizedForWorkspaceException) {
             return responseForNotAuthorized(x);
         } else {
             final String message = "Unexpected failure during authorization of client [" + clientKey + "]";

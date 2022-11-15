@@ -1,25 +1,27 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
-import static eu.opertusmundi.api_auth.auth_subrequest.model.RequestType.WMS;
+import static eu.opertusmundi.api_auth.auth_subrequest.model.RequestType.WFS;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+
 /**
- * Represents a WMS request.
+ * Represents a WFS request.
  * 
- * @see https://docs.geoserver.org/stable/en/user/services/wms/reference.html
+ * @see https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
  */
-@lombok.Getter
-public abstract class WmsRequest extends OwsRequest
+public abstract class WfsRequest extends OwsRequest
 {
     public enum ServiceVersion 
     {
-        V_1_1_1("1.1.1"),
+        V_1_1_0("1.1.0"),
         
-        V_1_3_0("1.3.0");
+        V_2_0_0("2.0.0");
         
         private final String versionString; 
         
@@ -46,33 +48,25 @@ public abstract class WmsRequest extends OwsRequest
     {
         GET_CAPABILITIES("GetCapabilities") {
             @Override
-            public WmsRequest buildRequest(ServiceVersion version)
+            public WfsRequest buildRequest(ServiceVersion version)
             {
-                return new WmsGetCapabilitiesRequest(version);
+                return new WfsGetCapabilitiesRequest(version);
             }
         },
         
-        GET_MAP("GetMap") {
+        DESCRIBE_FEATURE_TYPE("DescribeFeatureType") {
             @Override
-            public WmsRequest buildRequest(ServiceVersion version)
+            public WfsRequest buildRequest(ServiceVersion version)
             {
-                return new WmsGetMapRequest(version);
-            }
+                return new WfsDescribeFeatureTypeRequest(version);
+            }    
         },
         
-        DESCRIBE_LAYER("DescribeLayer") {
+        GET_FEATURE("GetFeature") {
             @Override
-            public WmsRequest buildRequest(ServiceVersion version)
+            public WfsRequest buildRequest(ServiceVersion version)
             {
-                return new WmsDescribeLayerRequest(version);
-            }
-        },
-        
-        GET_LEGEND_GRAPHIC("GetLegendGraphic") {
-            @Override
-            public WmsRequest buildRequest(ServiceVersion version)
-            {
-                return new WmsGetLegendGraphicRequest(version);
+                return new WfsGetFeatureRequest(version);
             }
         };
         
@@ -96,30 +90,30 @@ public abstract class WmsRequest extends OwsRequest
             return null;
         }
         
-        public abstract WmsRequest buildRequest(ServiceVersion version);
+        public abstract WfsRequest buildRequest(ServiceVersion version);
     }
     
     protected final ServiceVersion serviceVersion;
     
-    WmsRequest(ServiceVersion version, OperationType op)
+    WfsRequest(ServiceVersion version, OperationType op)
     {
-        super(WMS.name(), version == null? null : version.versionString, op.operationName);
+        super(WFS.name(), version == null? null : version.versionString, op.operationName);
         this.serviceVersion = version;
     }
     
-    WmsRequest(OperationType op)
+    WfsRequest(OperationType op)
     {
-        this(ServiceVersion.V_1_1_1, op);
+        this(ServiceVersion.V_2_0_0, op);
     }
     
-    public static WmsRequest fromMap(Map<String, String> queryParameters)
+    public static WfsRequest fromMap(Map<String, String> queryParameters)
     {
         Validate.notNull(queryParameters, "queryMap must not be null");
 
         final String service = queryParameters.get(SERVICE_PARAMETER_NAME);
-        Validate.isTrue(service == null || service.equalsIgnoreCase(WMS.name()), 
+        Validate.isTrue(service == null || service.equalsIgnoreCase(WFS.name()), 
             "`%s` parameter must either be '%s' or null (which defaults to the same)", 
-            SERVICE_PARAMETER_NAME, WMS.name());
+            SERVICE_PARAMETER_NAME, WFS.name());
         
         final String operationName = queryParameters.get(REQUEST_PARAMETER_NAME);
         Validate.notBlank(operationName, "%s: must not be blank", REQUEST_PARAMETER_NAME);
@@ -132,7 +126,7 @@ public abstract class WmsRequest extends OwsRequest
             null : ServiceVersion.fromString(versionString);
         
         // build request of the proper subtype (depending on operation)
-        final WmsRequest request = operationType.buildRequest(version);
+        final WfsRequest request = operationType.buildRequest(version);
         // set all other operation-specific stuff
         request.setFromMap(queryParameters);
         

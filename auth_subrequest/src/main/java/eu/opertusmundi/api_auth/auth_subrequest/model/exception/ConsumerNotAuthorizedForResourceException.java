@@ -1,4 +1,4 @@
-package eu.opertusmundi.api_auth.auth_subrequest.model;
+package eu.opertusmundi.api_auth.auth_subrequest.model.exception;
 
 import java.util.UUID;
 

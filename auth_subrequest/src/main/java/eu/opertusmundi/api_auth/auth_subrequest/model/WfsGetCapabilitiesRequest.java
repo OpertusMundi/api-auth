@@ -2,15 +2,14 @@ package eu.opertusmundi.api_auth.auth_subrequest.model;
 
 import java.util.Map;
 
-@lombok.Getter
-public class WmsGetCapabilitiesRequest extends WmsRequest
+public class WfsGetCapabilitiesRequest extends WfsRequest
 {
-    public WmsGetCapabilitiesRequest(ServiceVersion version)
+    public WfsGetCapabilitiesRequest(ServiceVersion version)
     {
         super(version, OperationType.GET_CAPABILITIES);
     }
     
-    public WmsGetCapabilitiesRequest()
+    public WfsGetCapabilitiesRequest()
     {
         super(OperationType.GET_CAPABILITIES);
     }
