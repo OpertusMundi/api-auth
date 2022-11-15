@@ -38,7 +38,7 @@ public class AccountSubscriptionRepository implements PanacheRepositoryBase<Acco
     }
     
     @ReactiveTransactional
-    public Uni<AccountSubscriptionEntity> findById(Integer id, boolean fetchProviderAndConsumer)
+    public Uni<AccountSubscriptionEntity> findById(int id, boolean fetchProviderAndConsumer)
     {
         if (!fetchProviderAndConsumer)
             return this.findById(id);

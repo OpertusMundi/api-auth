@@ -11,7 +11,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.smallrye.mutiny.Uni;
-
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountService;
 import eu.opertusmundi.api_auth.model.AccountDto;
 

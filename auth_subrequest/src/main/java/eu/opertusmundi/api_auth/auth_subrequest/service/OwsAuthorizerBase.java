@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.model.AccountDto;
@@ -45,6 +46,7 @@ abstract class OwsAuthorizerBase
     AssetResourceService assetResourceService;
     
     @Inject
+    @Named("defaultAccountSubscriptionService")
     AccountSubscriptionService accountSubscriptionService;
     
     /**

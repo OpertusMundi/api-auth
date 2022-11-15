@@ -14,7 +14,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
-
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
 import eu.opertusmundi.api_auth.model.ClientDto;
 
