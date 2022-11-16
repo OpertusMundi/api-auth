@@ -82,11 +82,11 @@ public class WorkspaceAuthorizationController
     UriInfo uriInfo;
     
     @Inject
-    @Named("defaultAccountClientService")
+    @Named("cachingAccountClientService")
     AccountClientService accountClientService;
     
     @Inject
-    @Named("defaultAccountService")
+    @Named("cachingAccountService")
     AccountService accountService;
     
     @Inject

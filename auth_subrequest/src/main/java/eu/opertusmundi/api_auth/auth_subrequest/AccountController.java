@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -19,6 +20,7 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 public class AccountController
 {
     @Inject
+    @Named("defaultAccountService")
     AccountService accountService;
     
     @GET

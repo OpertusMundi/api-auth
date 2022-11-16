@@ -31,40 +31,17 @@ public class DefaultAccountSubscriptionService implements AccountSubscriptionSer
     private final Function<AccountSubscriptionEntity, AccountSubscriptionDto> fullToDtoMapper =
         accountSubscriptionEntity -> accountSubscriptionEntity.toDto(true /* convertAccountToDto */);
        
-    private final Function<AccountSubscriptionEntity, AccountSubscriptionDto> defaultToDtoMapper = briefToDtoMapper;
+    private final Function<AccountSubscriptionEntity, AccountSubscriptionDto> defaultToDtoMapper = 
+       USE_BRIEF_REPRESENTATION?  briefToDtoMapper : fullToDtoMapper;
     
     private final Function<List<AccountSubscriptionEntity>, List<AccountSubscriptionDto>> defaultResultsMapper =
         results -> results.stream().map(defaultToDtoMapper).collect(Collectors.toUnmodifiableList());
-        
-    @Override
-    public Uni<AccountSubscriptionDto> findByKey(@NotBlank String keyAsString, boolean briefRepresentation)
-    {
-        UUID key = null;
-        try {
-            key = UUID.fromString(keyAsString);
-        } catch (IllegalArgumentException ex) {
-            return Uni.createFrom().failure(ex);
-        }
-        return this.findByKey(key, briefRepresentation);
-    }
-    
+            
     @Override
     public Uni<AccountSubscriptionDto> findByKey(@NotNull UUID key, boolean briefRepresentation)
     {
         return accountSubscriptionRepository.findByKey(key, !briefRepresentation /*fetchProviderAndConsumer*/)
             .map(briefRepresentation? briefToDtoMapper : fullToDtoMapper);
-    }
-    
-    @Override
-    public Uni<AccountSubscriptionDto> findByKey(@NotNull UUID key)
-    {
-        return this.findByKey(key, true);
-    }
-    
-    @Override
-    public Uni<AccountSubscriptionDto> findByKey(@NotBlank String keyAsString)
-    {
-        return this.findByKey(keyAsString, true);
     }
     
     @Override

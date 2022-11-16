@@ -7,7 +7,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.smallrye.mutiny.Uni;
@@ -36,29 +35,5 @@ public class DefaultAccountClientService implements AccountClientService
             .map(briefRepresentation? briefToDtoMapper : fullToDtoMapper)
             .onFailure(NoResultException.class)
                 .transform(ex -> new IllegalStateException("no account client for key: [" + key + "]", ex));
-    }
-    
-    @Override
-    public Uni<AccountClientDto> findByKey(@NotNull UUID key)
-    {
-        return this.findByKey(key, false);
-    }
-    
-    @Override
-    public Uni<AccountClientDto> findByKey(@NotBlank String keyAsString, boolean briefRepresentation)
-    {
-        UUID key = null;
-        try {
-            key = UUID.fromString(keyAsString);
-        } catch (IllegalArgumentException ex) {
-            return Uni.createFrom().failure(ex);
-        }
-        return this.findByKey(key, briefRepresentation);
-    }
-    
-    @Override
-    public Uni<AccountClientDto> findByKey(@NotBlank String keyAsString)
-    {
-        return this.findByKey(keyAsString, false);
     }
 }

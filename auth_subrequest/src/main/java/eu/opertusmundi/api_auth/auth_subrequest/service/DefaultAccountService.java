@@ -24,20 +24,7 @@ public class DefaultAccountService implements AccountService
     
     private final Function<AccountEntity, AccountDto> defaultToDtoMapper = accountEntity -> 
         accountEntity.toDto(false /*includeParent*/, false /*includeClients*/, false /*backLink*/);
-    
-    
-    @Override
-    public Uni<AccountDto> findByKey(@NotBlank String keyAsString)
-    {
-        UUID key = null;
-        try {
-            key = UUID.fromString(keyAsString);
-        } catch (IllegalArgumentException ex) {
-            return Uni.createFrom().failure(ex);
-        }
-        return this.findByKey(key);
-    }
-        
+            
     @Override
     public Uni<AccountDto> findByKey(@NotNull UUID key)
     {

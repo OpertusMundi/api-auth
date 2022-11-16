@@ -10,6 +10,8 @@ import io.smallrye.mutiny.Uni;
 
 public interface AccountClientService
 {
+    static final boolean USE_BRIEF_REPRESENTATION = false;
+    
     /**
      * Return a DTO representing an account client
      * 
@@ -20,7 +22,10 @@ public interface AccountClientService
      */
     Uni<AccountClientDto> findByKey(@NotNull UUID key, boolean briefRepresentation);
 
-    Uni<AccountClientDto> findByKey(@NotNull UUID key);
+    default Uni<AccountClientDto> findByKey(@NotNull UUID key)
+    {
+        return this.findByKey(key, USE_BRIEF_REPRESENTATION);
+    }
 
     /**
      * @see {@link DefaultAccountClientService#findByKey(UUID, boolean)}
@@ -29,7 +34,19 @@ public interface AccountClientService
      * @param briefRepresentation
      * @return
      */
-    Uni<AccountClientDto> findByKey(@NotBlank String keyAsString, boolean briefRepresentation);
+    default Uni<AccountClientDto> findByKey(@NotBlank String keyAsString, boolean briefRepresentation)
+    {
+        UUID key = null;
+        try {
+            key = UUID.fromString(keyAsString);
+        } catch (IllegalArgumentException ex) {
+            return Uni.createFrom().failure(ex);
+        }
+        return this.findByKey(key, briefRepresentation);
+    }
 
-    Uni<AccountClientDto> findByKey(@NotBlank String keyAsString);
+    default Uni<AccountClientDto> findByKey(@NotBlank String keyAsString)
+    {
+        return this.findByKey(keyAsString, USE_BRIEF_REPRESENTATION);
+    }
 }

@@ -10,7 +10,16 @@ import io.smallrye.mutiny.Uni;
 
 public interface AccountService
 {
-    Uni<AccountDto> findByKey(@NotBlank String keyAsString);
+    default Uni<AccountDto> findByKey(@NotBlank String keyAsString)
+    {
+        UUID key = null;
+        try {
+            key = UUID.fromString(keyAsString);
+        } catch (IllegalArgumentException ex) {
+            return Uni.createFrom().failure(ex);
+        }
+        return this.findByKey(key);
+    }
 
     Uni<AccountDto> findByKey(@NotNull UUID key);
 

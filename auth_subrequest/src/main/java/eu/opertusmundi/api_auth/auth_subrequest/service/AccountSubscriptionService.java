@@ -13,13 +13,30 @@ import io.smallrye.mutiny.Uni;
 
 public interface AccountSubscriptionService
 {
-    Uni<AccountSubscriptionDto> findByKey(@NotBlank String keyAsString, boolean briefRepresentation);
-
+    static final boolean USE_BRIEF_REPRESENTATION = true;
+    
     Uni<AccountSubscriptionDto> findByKey(@NotNull UUID key, boolean briefRepresentation);
+    
+    default Uni<AccountSubscriptionDto> findByKey(@NotBlank String keyAsString, boolean briefRepresentation)
+    {
+        UUID key = null;
+        try {
+            key = UUID.fromString(keyAsString);
+        } catch (IllegalArgumentException ex) {
+            return Uni.createFrom().failure(ex);
+        }
+        return this.findByKey(key, briefRepresentation);
+    }
 
-    Uni<AccountSubscriptionDto> findByKey(@NotNull UUID key);
+    default Uni<AccountSubscriptionDto> findByKey(@NotNull UUID key)
+    {
+        return this.findByKey(key, USE_BRIEF_REPRESENTATION);
+    }
 
-    Uni<AccountSubscriptionDto> findByKey(@NotBlank String keyAsString);
+    default Uni<AccountSubscriptionDto> findByKey(@NotBlank String keyAsString)
+    {
+        return this.findByKey(keyAsString, USE_BRIEF_REPRESENTATION);
+    }
 
     Uni<AccountSubscriptionDto> findById(@Positive int id, boolean briefRepresentation);
 

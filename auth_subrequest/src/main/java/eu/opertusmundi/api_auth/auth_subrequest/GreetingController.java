@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -38,6 +39,7 @@ public class GreetingController
     SecurityIdentity securityIdentity;
     
     @Inject
+    @Named("defaultAccountClientService")
     AccountClientService accountClientService;
     
     @Authenticated
