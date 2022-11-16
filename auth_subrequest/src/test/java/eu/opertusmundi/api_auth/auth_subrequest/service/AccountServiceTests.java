@@ -7,6 +7,7 @@ import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,6 +19,7 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 public class AccountServiceTests
 {
     @Inject
+    @Named("defaultAccountService")
     AccountService accountService;
     
     @ParameterizedTest
