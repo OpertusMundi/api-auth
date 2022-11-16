@@ -75,9 +75,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-       <groupId>io.quarkiverse.file-vault</groupId>
-       <artifactId>quarkus-file-vault</artifactId>
-       <version>1.0.0</version>
+      <groupId>io.quarkiverse.file-vault</groupId>
+      <artifactId>quarkus-file-vault</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
     <!-- internal deps -->
     <dependency>
@@ -93,7 +97,7 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
       <version>4.4</version>
-	</dependency>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
