@@ -4,7 +4,7 @@
   <parent>
     <groupId>eu.opertusmundi.api_auth</groupId>
     <artifactId>parent</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
   </parent>
   <artifactId>auth-subrequest</artifactId>
   <properties>
