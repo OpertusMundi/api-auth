@@ -23,7 +23,7 @@ import org.apache.commons.lang3.Validate;
 public class WmsGetMapRequest extends WmsRequest
 {
     /**
-     * Enumeration of WMS binary (image) formats.
+     * Enumeration of WMS output (image) formats.
      * 
      * @see https://docs.geoserver.org/stable/en/user/services/wms/outputformats.html#wms-output-formats
      */

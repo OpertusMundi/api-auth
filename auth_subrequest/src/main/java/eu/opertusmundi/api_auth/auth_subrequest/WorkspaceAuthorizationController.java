@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import eu.opertusmundi.api_auth.auth_subrequest.model.BaseRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceType;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
@@ -94,6 +95,10 @@ public class WorkspaceAuthorizationController
     Authorizer<WmsRequest> publicWmsEndpointAuthorizer;
     
     @Inject
+    @Named("publicWmtsEndpointAuthorizer")
+    Authorizer<WmtsRequest> publicWmtsEndpointAuthorizer;
+    
+    @Inject
     @Named("publicWfsEndpointAuthorizer")
     Authorizer<WfsRequest> publicWfsEndpointAuthorizer;
     
@@ -112,6 +117,22 @@ public class WorkspaceAuthorizationController
             () -> WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
         return authorizeForRequest(requestSupplier, publicWmsEndpointAuthorizer);
     }
+   
+    @GET
+    @Path("/gwc/service/wmts")
+    public Uni<RestResponse<?>> authorizeForWmts(
+        @HeaderParam(ORIG_METHOD_HEADER_NAME) final String origRequestMethod,
+        @HeaderParam(AUTH_REQUEST_REDIRECT_HEADER_NAME) final URI authRequestRedirect)
+    {
+        if (!HttpMethod.GET.name().equals(origRequestMethod)) {
+            return Uni.createFrom().item(responseForBadRequest(
+                "only GET (KVP-style) is allowed for WMTS requests [origRequestMethod=" + origRequestMethod + "]"));
+        }
+        
+        final Supplier<WmtsRequest> requestSupplier = 
+            () -> WmtsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
+        return authorizeForRequest(requestSupplier, publicWmtsEndpointAuthorizer);
+    }
     
     @GET
     @Path("/wfs")
@@ -128,7 +149,7 @@ public class WorkspaceAuthorizationController
             () -> WfsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
         return authorizeForRequest(requestSupplier, publicWfsEndpointAuthorizer);
     }
-
+    
     private <R extends BaseRequest> Uni<RestResponse<?>> authorizeForRequest(
         Supplier<? extends R> requestSupplier, Authorizer<R> publicEndpointAuthorizer)
     {

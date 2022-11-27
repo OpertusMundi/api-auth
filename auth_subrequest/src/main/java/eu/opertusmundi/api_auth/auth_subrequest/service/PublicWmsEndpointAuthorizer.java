@@ -1,7 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -9,7 +8,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +18,8 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetCapabilitiesRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetLegendGraphicRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetMapRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
-import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
-import eu.opertusmundi.api_auth.model.AccountSubscriptionDto;
 
 
 @ApplicationScoped
