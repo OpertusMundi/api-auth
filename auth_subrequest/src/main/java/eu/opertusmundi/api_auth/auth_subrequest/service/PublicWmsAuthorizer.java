@@ -23,10 +23,10 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 
 
 @ApplicationScoped
-@Named("publicWmsEndpointAuthorizer")
-public class PublicWmsEndpointAuthorizer extends OwsAuthorizerBase implements Authorizer<WmsRequest>
+@Named("publicWmsAuthorizer")
+public class PublicWmsAuthorizer extends OwsAuthorizerBase implements Authorizer<WmsRequest>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWmsEndpointAuthorizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWmsAuthorizer.class);
 
     @Override
     public Uni<Void> authorize(

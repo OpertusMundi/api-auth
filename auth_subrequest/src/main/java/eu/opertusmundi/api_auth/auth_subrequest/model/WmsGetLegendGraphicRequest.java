@@ -40,7 +40,7 @@ public class WmsGetLegendGraphicRequest extends WmsRequest
     
     public static final String SLDBODY_PARAMETER_NAME = "sld_body";
     
-    protected String format = OutputFormat.PNG.format;
+    protected OutputFormat format = OutputFormat.PNG;
     
     public static final String FORMAT_PARAMETER_NAME = "format";
     
@@ -98,49 +98,49 @@ public class WmsGetLegendGraphicRequest extends WmsRequest
             setLegendOptions(legendOptions);
     }
     
-    void setLayerName(String layerName)
+    public void setLayerName(String layerName)
     {
         this.layerName = Objects.requireNonNull(layerName);
     }
     
-    void setStyleName(String styleName)
+    public void setStyleName(String styleName)
     {
         this.styleName = Objects.requireNonNull(styleName);
     }
     
-    void setWidth(int width)
+    public void setWidth(int width)
     {
         this.width = width;
     }
     
-    void setHeight(int height)
+    public void setHeight(int height)
     {
         this.height = height;
     }
     
-    void setSld(URI sld)
+    public void setSld(URI sld)
     {
         this.sld = Objects.requireNonNull(sld);
     }
     
-    void setSldBody(String sldBody)
+    public void setSldBody(String sldBody)
     {
         this.sldBody = Objects.requireNonNull(sldBody);
     }
     
-    void setFormat(OutputFormat f)
+    public void setFormat(OutputFormat f)
     {
-        this.format = Objects.requireNonNull(f).format;
+        this.format = Objects.requireNonNull(f);
     }
     
-    void setFormat(String formatAsString)
+    public void setFormat(String formatAsString)
     {
         final OutputFormat outputFormat = OutputFormat.fromString(Objects.requireNonNull(formatAsString));
         Validate.isTrue(outputFormat != null, "unsupported output format: [%s]", formatAsString);
-        this.format = outputFormat.format;
+        this.format = outputFormat;
     }
     
-    void setLegendOptions(String legendOptions)
+    public void setLegendOptions(String legendOptions)
     {
         this.legendOptions = Objects.requireNonNull(legendOptions);
     }

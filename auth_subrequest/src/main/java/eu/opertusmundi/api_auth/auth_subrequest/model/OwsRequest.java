@@ -3,6 +3,7 @@ package eu.opertusmundi.api_auth.auth_subrequest.model;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * Represents a base OWS (WMS/WMTS/WFS) request
@@ -31,7 +32,7 @@ public abstract class OwsRequest extends BaseRequest
      * The service-specific operation name (e.g. `GetMap` for a WMS service), 
      * called <code>request</code> in OGC terminology
      */
-    @NotBlank
+    @NotNull
     protected final String request;
     
     public static final String REQUEST_PARAMETER_NAME = "request";

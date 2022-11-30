@@ -17,10 +17,10 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
-@Named("publicWmtsEndpointAuthorizer")
-public class PublicWmtsEndpointAuthorizer extends OwsAuthorizerBase implements Authorizer<WmtsRequest>
+@Named("publicWmtsAuthorizer")
+public class PublicWmtsAuthorizer extends OwsAuthorizerBase implements Authorizer<WmtsRequest>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWmtsEndpointAuthorizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWmtsAuthorizer.class);
     
     @Override
     public Uni<Void> authorize(

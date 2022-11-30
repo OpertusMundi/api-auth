@@ -5,6 +5,7 @@ import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.opertusmundi.api_auth.auth_subrequest.model.BaseRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.TmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsRequest;
@@ -91,16 +93,20 @@ public class WorkspaceAuthorizationController
     AccountService accountService;
     
     @Inject
-    @Named("publicWmsEndpointAuthorizer")
-    Authorizer<WmsRequest> publicWmsEndpointAuthorizer;
+    @Named("publicWmsAuthorizer")
+    Authorizer<WmsRequest> publicWmsAuthorizer;
     
     @Inject
-    @Named("publicWmtsEndpointAuthorizer")
-    Authorizer<WmtsRequest> publicWmtsEndpointAuthorizer;
+    @Named("publicWmtsAuthorizer")
+    Authorizer<WmtsRequest> publicWmtsAuthorizer;
     
     @Inject
-    @Named("publicWfsEndpointAuthorizer")
-    Authorizer<WfsRequest> publicWfsEndpointAuthorizer;
+    @Named("publicWfsAuthorizer")
+    Authorizer<WfsRequest> publicWfsAuthorizer;
+    
+    @Inject
+    @Named("publicTmsAuthorizer")
+    Authorizer<TmsRequest> publicTmsAuthorizer;
     
     @GET
     @Path("/wms")
@@ -115,7 +121,7 @@ public class WorkspaceAuthorizationController
         
         final Supplier<WmsRequest> requestSupplier = 
             () -> WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
-        return authorizeForRequest(requestSupplier, publicWmsEndpointAuthorizer);
+        return authorizeForRequest(requestSupplier, publicWmsAuthorizer);
     }
    
     @GET
@@ -131,7 +137,52 @@ public class WorkspaceAuthorizationController
         
         final Supplier<WmtsRequest> requestSupplier = 
             () -> WmtsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
-        return authorizeForRequest(requestSupplier, publicWmtsEndpointAuthorizer);
+        return authorizeForRequest(requestSupplier, publicWmtsAuthorizer);
+    }
+    
+    // See also: https://www.geowebcache.org/docs/current/services/tms.html
+    @GET
+    @Path("/gwc/service/tms/{serviceVersion:[1]\\.[0]\\.[0]}/{layer}/{z:[0-9]+}/{x:[0-9]+}/{fileName:[0-9]+\\.(png|jpeg|pbf)}")
+    public Uni<RestResponse<?>> authorizeForTms(
+        @HeaderParam(ORIG_METHOD_HEADER_NAME) final String origRequestMethod,
+        @HeaderParam(AUTH_REQUEST_REDIRECT_HEADER_NAME) final URI authRequestRedirect,
+        @PathParam("serviceVersion") String serviceVersion, 
+        @PathParam("layer") String layer,
+        @PathParam("z") int z, 
+        @PathParam("x") int x,
+        @PathParam("fileName") String fileName)
+    {
+        if (!HttpMethod.GET.name().equals(origRequestMethod)) {
+            return Uni.createFrom().item(responseForBadRequest(
+                "only GET is allowed for TMS requests [origRequestMethod=" + origRequestMethod + "]"));
+        }
+        
+        final String[] layerParts = StringUtils.split(layer, '@');
+        Validate.isTrue(layerParts.length == 3, 
+            "layer path component is expected as {layerName}@{gridsetId}@{formatExtension}");
+        final String layerName = layerParts[0];
+        Validate.notBlank(layerName, "layerName must not be blank");
+        final String gridsetId = layerParts[1];
+        Validate.notBlank(gridsetId, "gridsetId must not be blank");
+        final String formatExtension = layerParts[2];
+        Validate.notBlank(formatExtension, "formatExtension must not be blank");
+        
+        final String[] fileNameParts = StringUtils.split(fileName, '.');
+        Validate.isTrue(fileNameParts.length == 2, 
+            "fileName component is expected as {y}.{formatExtension}");
+        final int y = Integer.parseInt(fileNameParts[0]);
+        Validate.isTrue(formatExtension.equalsIgnoreCase(fileNameParts[1]), 
+            "fileName extension must be same as format extension specified at layer path component");
+        
+        final Supplier<TmsRequest> requestSupplier = () -> TmsRequest.builder()
+            .serviceVersion(TmsRequest.ServiceVersion.fromString(serviceVersion))
+            .layerName(layerName)
+            .gridsetId(gridsetId)
+            .outputFormat(TmsRequest.OutputFormat.fromExtension(formatExtension))
+            .z(z).x(x).y(y)
+            .build();
+        
+        return authorizeForRequest(requestSupplier, publicTmsAuthorizer);
     }
     
     @GET
@@ -147,7 +198,7 @@ public class WorkspaceAuthorizationController
         
         final Supplier<WfsRequest> requestSupplier = 
             () -> WfsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
-        return authorizeForRequest(requestSupplier, publicWfsEndpointAuthorizer);
+        return authorizeForRequest(requestSupplier, publicWfsAuthorizer);
     }
     
     private <R extends BaseRequest> Uni<RestResponse<?>> authorizeForRequest(

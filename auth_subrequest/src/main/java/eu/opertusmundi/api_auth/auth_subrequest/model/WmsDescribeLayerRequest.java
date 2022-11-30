@@ -47,7 +47,7 @@ public class WmsDescribeLayerRequest extends WmsRequest
 
     public static final String LAYERS_PARAMETER_NAME = "layers";
     
-    protected String outputFormat = OutputFormat.TEXT.format;
+    protected OutputFormat outputFormat = OutputFormat.TEXT;
     
     public static final String OUTPUTFORMAT_PARAMETER_NAME = "output_format";
     
@@ -77,25 +77,25 @@ public class WmsDescribeLayerRequest extends WmsRequest
         }
     }
     
-    void setLayerNames(List<String> layerNames)
+    public void setLayerNames(List<String> layerNames)
     {
         this.layerNames = List.copyOf(Objects.requireNonNull(layerNames));
     }
     
-    void setLayerNames(String... layerNames)
+    public void setLayerNames(String... layerNames)
     {
         this.layerNames = List.of(layerNames); 
     }
     
-    void setOutputFormat(OutputFormat outputFormat)
+    public void setOutputFormat(OutputFormat outputFormat)
     {
-        this.outputFormat = Objects.requireNonNull(outputFormat).format;
+        this.outputFormat = Objects.requireNonNull(outputFormat);
     }
     
     @Override
     public String toString()
     {
-        return String.format("%s.%s {version=%s, layers=%s}", 
-            service, request, version, layerNames);
+        return String.format("%s.%s {version=%s, layers=%s, format=%s}", 
+            service, request, version, layerNames, outputFormat);
     }
 }

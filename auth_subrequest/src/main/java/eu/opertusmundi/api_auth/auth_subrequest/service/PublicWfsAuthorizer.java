@@ -20,10 +20,10 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
-@Named("publicWfsEndpointAuthorizer")
-public class PublicWfsEndpointAuthorizer extends OwsAuthorizerBase implements Authorizer<WfsRequest>
+@Named("publicWfsAuthorizer")
+public class PublicWfsAuthorizer extends OwsAuthorizerBase implements Authorizer<WfsRequest>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWfsEndpointAuthorizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWfsAuthorizer.class);
     
     @Override
     public Uni<Void> authorize(

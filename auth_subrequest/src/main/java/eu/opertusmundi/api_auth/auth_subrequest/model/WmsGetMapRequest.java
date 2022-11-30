@@ -144,7 +144,7 @@ public class WmsGetMapRequest extends WmsRequest
     
     public static final String HEIGHT_PARAMETER_NAME = "height";
     
-    protected String format = OutputFormat.PNG.format;
+    protected OutputFormat format = OutputFormat.PNG;
     
     public static final String FORMAT_PARAMETER_NAME = "format";
     
@@ -223,78 +223,78 @@ public class WmsGetMapRequest extends WmsRequest
             setSldBody(sldBody);
     }
     
-    void setLayerNames(List<String> layerNames)
+    public void setLayerNames(List<String> layerNames)
     {
         this.layerNames = List.copyOf(Objects.requireNonNull(layerNames));
     }
     
-    void setLayerNames(String... layerNames)
+    public void setLayerNames(String... layerNames)
     {
         this.layerNames = List.of(layerNames); 
     }
     
-    void setStyleNames(List<String> styleNames)
+    public void setStyleNames(List<String> styleNames)
     {
         this.styleNames = List.copyOf(Objects.requireNonNull(styleNames));
     }
     
-    void setStyleNames(String... styleNames)
+    public void setStyleNames(String... styleNames)
     {
         this.styleNames = List.of(styleNames); 
     }
     
-    void setSrs(String srs)
+    public void setSrs(String srs)
     {
         Objects.requireNonNull(srs);
         Validate.isTrue(SRS_VALIDATOR.test(srs), "invalid spatial reference system: [%s]", srs);
         this.srs = srs;
     }
     
-    void setBBox(BBox bbox)
+    public void setBBox(BBox bbox)
     {
         this.bbox = Objects.requireNonNull(bbox);
     }
     
-    void setWidth(int width)
+    public void setWidth(int width)
     {
         this.width = width;
     }
     
-    void setHeight(int height)
+    public void setHeight(int height)
     {
         this.height = height;
     }
     
-    void setFormat(OutputFormat f)
+    public void setFormat(OutputFormat f)
     {
-        this.format = Objects.requireNonNull(f).format;
+        this.format = Objects.requireNonNull(f);
     }
     
-    void setFormat(String formatAsString)
+    public void setFormat(String formatAsString)
     {
         final OutputFormat outputFormat = OutputFormat.fromString(Objects.requireNonNull(formatAsString));
         Validate.isTrue(outputFormat != null, "unsupported output format: [%s]", formatAsString);
-        this.format = outputFormat.format;
+        this.format = outputFormat;
     }
     
-    void setTransparent(Boolean transparent)
+    public void setTransparent(Boolean transparent)
     {
         this.transparent = transparent;
     }
     
-    void setBgcolor(String color)
+    public void setBgcolor(String color)
     {
         Objects.requireNonNull(color);
         Validate.isTrue(COLOR_RRGGBB_VALIDATOR.test(color), "invalid RRGGBB color: [%s]", color);
         this.bgcolor = color;
     }
     
-    void setSld(URI sld)
+    public void setSld(URI sld)
     {
         this.sld = Objects.requireNonNull(sld);
     }
     
-    void setSldBody(String sldBody)
+    public void setSldBody(String sldBody)
     {
         this.sldBody = Objects.requireNonNull(sldBody);
     }
@@ -302,7 +302,7 @@ public class WmsGetMapRequest extends WmsRequest
     @Override
     public String toString()
     {
-        return String.format("%s.%s {version=%s, layers=%s, srs=%s, bbox=%s}", 
-            service, request, version, layerNames, srs, bbox);
+        return String.format("%s.%s {version=%s, layers=%s, srs=%s, bbox=%s, format=%s}", 
+            service, request, version, layerNames, srs, bbox, format);
     }
 }

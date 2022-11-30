@@ -4,5 +4,6 @@ public enum RequestType
 {
     WMS,
     WFS,
-    WMTS;
+    WMTS,
+    TMS;
 }

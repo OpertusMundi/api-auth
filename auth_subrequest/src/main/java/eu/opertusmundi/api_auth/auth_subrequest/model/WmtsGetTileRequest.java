@@ -3,6 +3,7 @@ package eu.opertusmundi.api_auth.auth_subrequest.model;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
 import org.apache.commons.lang3.StringUtils;
@@ -61,8 +62,8 @@ public class WmtsGetTileRequest extends WmtsRequest
     
     public static final String STYLE_PARAMETER_NAME = "Style";
     
-    @NotBlank
-    protected String format = OutputFormat.PNG.format;
+    @NotNull
+    protected OutputFormat format = OutputFormat.PNG;
     
     public static final String FORMAT_PARAMETER_NAME = "Format";
     
@@ -168,7 +169,7 @@ public class WmtsGetTileRequest extends WmtsRequest
     {
         final OutputFormat outputFormat = OutputFormat.fromString(formatAsString);
         Validate.isTrue(outputFormat != null, "unsupported output format: [%s]", formatAsString);
-        this.format = outputFormat.format;
+        this.format = outputFormat;
     }
 
     void setLayerName(String layerName)
@@ -194,8 +195,8 @@ public class WmtsGetTileRequest extends WmtsRequest
     @Override
     public String toString()
     {
-        return String.format("%s.%s {version=%s, layer=%s, tileMatrix=%s, tileRow=%d, tileCol=%d}", 
-            service, request, version, layerName, tileMatrix, tileRow, tileCol);
+        return String.format("%s.%s {version=%s, layer=%s, tileMatrix=%s, tileRow=%d, tileCol=%d, format=%s}", 
+            service, request, version, layerName, tileMatrix, tileRow, tileCol, format);
     }
     
 }

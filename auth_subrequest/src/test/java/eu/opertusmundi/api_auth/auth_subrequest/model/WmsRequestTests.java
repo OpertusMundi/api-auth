@@ -62,7 +62,7 @@ public class WmsRequestTests
         assertEquals("WMS", request.getService());
         assertEquals("1.1.1", request.getVersion());
         assertEquals("DescribeLayer", request.getRequest());
-        assertEquals("text/xml", request.getOutputFormat());
+        assertEquals("text/xml", request.getOutputFormat().toFormatString());
         assertEquals(List.of("_85a5a485-61b8-4189-b4af-bc4a2b01241a", "_10237874-b95e-4152-8fd4-08ee5308c750"), request.getLayerNames());
     }
     
@@ -100,7 +100,7 @@ public class WmsRequestTests
         
         assertEquals(WmsRequest.ServiceVersion.V_1_1_1.versionAsString(), request.getVersion());
         assertEquals(List.of("_159d482d-3b44-45d3-8052-6d7dc2085521"), request.getLayerNames());
-        assertEquals("image/png", request.getFormat());
+        assertEquals("image/png", request.getFormat().toFormatString());
         assertEquals(256, request.getHeight());
         assertEquals(256, request.getWidth());
         assertEquals("EPSG:3857", request.getSrs());

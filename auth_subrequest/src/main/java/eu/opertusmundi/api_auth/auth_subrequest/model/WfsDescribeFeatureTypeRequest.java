@@ -41,12 +41,12 @@ public class WfsDescribeFeatureTypeRequest extends WfsRequest
             setLayerNames(StringUtils.split(layerNamesAsString, ','));
     }
     
-    void setLayerNames(List<String> layerNames)
+    public void setLayerNames(List<String> layerNames)
     {
         this.layerNames = List.copyOf(Objects.requireNonNull(layerNames));
     }
     
-    void setLayerNames(String... layerNames)
+    public void setLayerNames(String... layerNames)
     {
         this.layerNames = List.of(layerNames); 
     }

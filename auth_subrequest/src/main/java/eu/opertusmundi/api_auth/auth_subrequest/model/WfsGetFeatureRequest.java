@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Size;
 
 import org.apache.commons.lang3.StringUtils;
@@ -115,7 +114,7 @@ public class WfsGetFeatureRequest extends WfsRequest
     public static final String LAYER_NAMES_V2_PARAMETER_NAME = "typeNames";
     
     @NonNull
-    protected String outputFormat = OutputFormat.GML3.format;
+    protected OutputFormat outputFormat = OutputFormat.GML3;
     
     public static final String OUTPUTFORMAT_PARAMETER_NAME = "outputFormat";
     
@@ -185,56 +184,56 @@ public class WfsGetFeatureRequest extends WfsRequest
             setBbox(BBox.fromString(bboxAsString));
     }
     
-    void setOutputFormat(OutputFormat f)
+    public void setOutputFormat(OutputFormat f)
     {
-        this.outputFormat = Objects.requireNonNull(f).format;
+        this.outputFormat = Objects.requireNonNull(f);
     }
     
-    void setOutputFormat(String formatAsString)
+    public void setOutputFormat(String formatAsString)
     {
         final OutputFormat outputFormat = OutputFormat.fromString(Objects.requireNonNull(formatAsString));
         Validate.isTrue(outputFormat != null, "unsupported output format: [%s]", formatAsString);
-        this.outputFormat = outputFormat.format;
+        this.outputFormat = outputFormat;
     }
     
-    void setLayerNames(List<String> layerNames)
+    public void setLayerNames(List<String> layerNames)
     {
         this.layerNames = List.copyOf(Objects.requireNonNull(layerNames));
     }
     
-    void setLayerNames(String... layerNames)
+    public void setLayerNames(String... layerNames)
     {
         this.layerNames = List.of(layerNames); 
     }
     
-    void setFeatureId(String featureId)
+    public void setFeatureId(String featureId)
     {
         this.featureId = Objects.requireNonNull(featureId);
     }
     
-    void setMaxNumOfFeatures(int maxNumOfFeatures)
+    public void setMaxNumOfFeatures(int maxNumOfFeatures)
     {
         this.maxNumOfFeatures = Integer.valueOf(maxNumOfFeatures);
     }
     
-    void setPropertyNames(List<String> propertyNames)
+    public void setPropertyNames(List<String> propertyNames)
     {
         this.propertyNames = propertyNames == null? null : List.copyOf(propertyNames);
     }
     
-    void setPropertyNames(String... propertyNames)
+    public void setPropertyNames(String... propertyNames)
     {
         this.propertyNames = List.of(propertyNames);
     }
     
-    void setSrs(String srs)
+    public void setSrs(String srs)
     {
         Objects.requireNonNull(srs);
         Validate.isTrue(SRS_VALIDATOR.test(srs), "invalid spatial reference system: [%s]", srs);
         this.srs = srs;
     }
     
-    void setBbox(BBox bbox)
+    public void setBbox(BBox bbox)
     {
         this.bbox = Objects.requireNonNull(bbox);
     }
