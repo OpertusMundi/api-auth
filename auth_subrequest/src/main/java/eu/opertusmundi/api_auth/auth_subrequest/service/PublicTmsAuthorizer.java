@@ -16,7 +16,8 @@ import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
 @Named("publicTmsAuthorizer")
-public class PublicTmsAuthorizer extends OwsAuthorizerBase implements Authorizer<TmsRequest>
+public class PublicTmsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
+    implements Authorizer<TmsRequest>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PublicTmsAuthorizer.class);
     
@@ -33,7 +34,7 @@ public class PublicTmsAuthorizer extends OwsAuthorizerBase implements Authorizer
         }
         
         final AccountDto consumerAccount = consumerAccountClient.getAccount();
-        final String assetKey = extractAssetKeyFromLayerName(request.getLayerName());
+        final String assetKey = layerNamingStrategy.extractAssetKeyFromLayerName(request.getLayerName());
         return checkAssetKeyFromSubscriptions(consumerAccount, providerAccount, assetKey);
     }
 }

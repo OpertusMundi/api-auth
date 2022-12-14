@@ -21,7 +21,8 @@ import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
 @Named("publicWfsAuthorizer")
-public class PublicWfsAuthorizer extends OwsAuthorizerBase implements Authorizer<WfsRequest>
+public class PublicWfsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
+    implements Authorizer<WfsRequest>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PublicWfsAuthorizer.class);
     
@@ -41,11 +42,13 @@ public class PublicWfsAuthorizer extends OwsAuthorizerBase implements Authorizer
         
         if (request instanceof WfsGetFeatureRequest) {
             final WfsGetFeatureRequest getFeatureRequest = (WfsGetFeatureRequest) request;
-            final List<String> assetKeys = extractAssetKeysFromLayerNames(getFeatureRequest.getLayerNames());
+            final List<String> assetKeys = 
+                layerNamingStrategy.extractAssetKeysFromLayerNames(getFeatureRequest.getLayerNames());
             return checkAssetKeysFromSubscriptions(consumerAccount, providerAccount, assetKeys);
         } else if (request instanceof WfsDescribeFeatureTypeRequest) {
             final WfsDescribeFeatureTypeRequest describeFeatureTypeRequest = (WfsDescribeFeatureTypeRequest) request;
-            final List<String> assetKeys = extractAssetKeysFromLayerNames(describeFeatureTypeRequest.getLayerNames());
+            final List<String> assetKeys = 
+                layerNamingStrategy.extractAssetKeysFromLayerNames(describeFeatureTypeRequest.getLayerNames());
             return checkAssetKeysFromSubscriptions(consumerAccount, providerAccount, assetKeys);
         } else if (request instanceof WfsGetCapabilitiesRequest) {
             // success (GetCapabilities is allowed for all consumers)

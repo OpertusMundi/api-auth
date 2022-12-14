@@ -24,7 +24,8 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 
 @ApplicationScoped
 @Named("publicWmsAuthorizer")
-public class PublicWmsAuthorizer extends OwsAuthorizerBase implements Authorizer<WmsRequest>
+public class PublicWmsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
+    implements Authorizer<WmsRequest>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PublicWmsAuthorizer.class);
 
@@ -44,14 +45,16 @@ public class PublicWmsAuthorizer extends OwsAuthorizerBase implements Authorizer
         
         if (request instanceof WmsGetMapRequest) {
             final WmsGetMapRequest getMapRequest = (WmsGetMapRequest) request;
-            final List<String> assetKeys = extractAssetKeysFromLayerNames(getMapRequest.getLayerNames());
+            final List<String> assetKeys = 
+                layerNamingStrategy.extractAssetKeysFromLayerNames(getMapRequest.getLayerNames());
             return checkAssetKeysFromSubscriptions(consumerAccount, providerAccount, assetKeys);
         } else if (request instanceof WmsGetCapabilitiesRequest) {
             // success (GetCapabilities is allowed for all consumers)
             return Uni.createFrom().nullItem();
         } else if (request instanceof WmsGetLegendGraphicRequest) {
             final WmsGetLegendGraphicRequest getLegendGraphicRequest = (WmsGetLegendGraphicRequest) request;
-            final String assetKey = extractAssetKeyFromLayerName(getLegendGraphicRequest.getLayerName());
+            final String assetKey = 
+                layerNamingStrategy.extractAssetKeyFromLayerName(getLegendGraphicRequest.getLayerName());
             return checkAssetKeyFromSubscriptions(consumerAccount, providerAccount, assetKey);
         } else if (request instanceof WmsDescribeLayerRequest) {
             // success (DescribeLayer is allowed for all consumers)
