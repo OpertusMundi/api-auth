@@ -1,4 +1,4 @@
-package eu.opertusmundi.api_auth.auth_subrequest.service;
+package eu.opertusmundi.api_auth.auth_subrequest.service.public_ogc;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -6,13 +6,20 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
-import eu.opertusmundi.api_auth.model.AccountDto;
-import eu.opertusmundi.api_auth.model.AccountSubscriptionDto;
 import io.smallrye.mutiny.Uni;
 
-abstract class SubscriptionBasedOwsAuthorizerSupport extends OwsAuthorizerBase
+import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
+import eu.opertusmundi.api_auth.auth_subrequest.service.AccountSubscriptionService;
+import eu.opertusmundi.api_auth.auth_subrequest.service.LayerNamingStrategy;
+import eu.opertusmundi.api_auth.model.AccountDto;
+import eu.opertusmundi.api_auth.model.AccountSubscriptionDto;
+
+
+abstract class SubscriptionBasedOwsAuthorizerSupport
 {
+    @Inject
+    LayerNamingStrategy layerNamingStrategy;
+    
     @Inject
     @Named("defaultAccountSubscriptionService")
     AccountSubscriptionService accountSubscriptionService;

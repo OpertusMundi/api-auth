@@ -1,4 +1,4 @@
-package eu.opertusmundi.api_auth.auth_subrequest.service;
+package eu.opertusmundi.api_auth.auth_subrequest.service.public_ogc;
 
 import java.util.List;
 
@@ -15,16 +15,17 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WfsDescribeFeatureTypeRequ
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsGetCapabilitiesRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsGetFeatureRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
-@Named("publicWfsAuthorizer")
-public class PublicWfsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
+@Named("public_ogc.WfsAuthorizer")
+public class WfsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
     implements Authorizer<WfsRequest>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWfsAuthorizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WfsAuthorizer.class);
     
     @Override
     public Uni<Void> authorize(

@@ -1,4 +1,4 @@
-package eu.opertusmundi.api_auth.auth_subrequest.service;
+package eu.opertusmundi.api_auth.auth_subrequest.service.public_ogc;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -12,16 +12,17 @@ import org.slf4j.LoggerFactory;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsGetCapabilitiesRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsGetTileRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
-@Named("publicWmtsAuthorizer")
-public class PublicWmtsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
+@Named("public_ogc.WmtsAuthorizer")
+public class WmtsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
     implements Authorizer<WmtsRequest>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWmtsAuthorizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WmtsAuthorizer.class);
     
     @Override
     public Uni<Void> authorize(

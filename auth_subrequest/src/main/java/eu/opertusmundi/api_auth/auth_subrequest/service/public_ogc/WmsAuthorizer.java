@@ -1,4 +1,4 @@
-package eu.opertusmundi.api_auth.auth_subrequest.service;
+package eu.opertusmundi.api_auth.auth_subrequest.service.public_ogc;
 
 import java.util.List;
 
@@ -18,16 +18,17 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetCapabilitiesRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetLegendGraphicRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetMapRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
 
 
 @ApplicationScoped
-@Named("publicWmsAuthorizer")
-public class PublicWmsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
+@Named("public_ogc.WmsAuthorizer")
+public class WmsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport 
     implements Authorizer<WmsRequest>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublicWmsAuthorizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WmsAuthorizer.class);
 
     @Override
     public Uni<Void> authorize(
