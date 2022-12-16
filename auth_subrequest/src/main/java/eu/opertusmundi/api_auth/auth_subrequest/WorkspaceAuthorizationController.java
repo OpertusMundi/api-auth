@@ -237,7 +237,7 @@ public class WorkspaceAuthorizationController
                    return authorizerForPrivateWorkspace.authorize(
                        consumerAccountClient, providerAccount, requestId, request);
                case PUBLIC:
-                   // consumer is accessing a public workspace 
+                   // consumer is accessing a public workspace
                    return authorizerForPublicWorkspace.authorize(
                        consumerAccountClient, providerAccount, requestId, request);
                default:

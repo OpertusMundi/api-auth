@@ -1,5 +1,7 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
@@ -199,4 +201,9 @@ public class WmtsGetTileRequest extends WmtsRequest
             service, request, version, layerName, tileMatrix, tileRow, tileCol, format);
     }
     
+    @Override
+    public List<String> getLayerNames()
+    {
+        return Collections.singletonList(layerName);
+    }
 }

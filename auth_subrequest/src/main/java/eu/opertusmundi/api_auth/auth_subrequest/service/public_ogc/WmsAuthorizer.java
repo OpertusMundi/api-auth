@@ -43,6 +43,10 @@ public class WmsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport
         }
         
         final AccountDto consumerAccount = consumerAccountClient.getAccount();
+        if (consumerAccount.getId().equals(providerAccount.getId())) {
+            // success (consumer is same with provider)
+            return Uni.createFrom().nullItem();
+        }
         
         if (request instanceof WmsGetMapRequest) {
             final WmsGetMapRequest getMapRequest = (WmsGetMapRequest) request;

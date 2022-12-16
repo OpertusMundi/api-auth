@@ -40,6 +40,10 @@ public class WfsAuthorizer extends SubscriptionBasedOwsAuthorizerSupport
         }
         
         final AccountDto consumerAccount = consumerAccountClient.getAccount();
+        if (consumerAccount.getId().equals(providerAccount.getId())) {
+            // success (consumer is same with provider)
+            return Uni.createFrom().nullItem();
+        }
         
         if (request instanceof WfsGetFeatureRequest) {
             final WfsGetFeatureRequest getFeatureRequest = (WfsGetFeatureRequest) request;

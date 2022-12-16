@@ -1,5 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
@@ -44,4 +45,6 @@ public abstract class OwsRequest extends BaseRequest
     {
         return String.format("%s.%s {version=%s}", service, request, version);
     }
+    
+    public abstract List<String> getLayerNames();
 }

@@ -1,6 +1,8 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -150,5 +152,11 @@ public class WmsGetLegendGraphicRequest extends WmsRequest
     {
         return String.format("%s.%s {version=%s, layer=%s}", 
             service, request, version, layerName);
+    }
+    
+    @Override
+    public List<String> getLayerNames()
+    {
+        return Collections.singletonList(layerName);
     }
 }
