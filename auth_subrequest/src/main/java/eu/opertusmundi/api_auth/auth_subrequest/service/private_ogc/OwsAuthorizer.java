@@ -16,10 +16,10 @@ import io.smallrye.mutiny.Uni;
 
 import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
 import eu.opertusmundi.api_auth.auth_subrequest.model.OwsRequest;
-import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForWorkspaceException;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
+import eu.opertusmundi.api_auth.model.WorkspaceInfo;
 
 @ApplicationScoped
 @Named("private_ogc.OwsAuthorizer")

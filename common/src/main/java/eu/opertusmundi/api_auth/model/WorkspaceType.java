@@ -1,11 +1,9 @@
-package eu.opertusmundi.api_auth.auth_subrequest.model;
-
-import org.apache.commons.lang3.StringUtils;
+package eu.opertusmundi.api_auth.model;
 
 public enum WorkspaceType
 {
     /**
-     * A type of workspace for public-facing (commercial) APIs
+     * A type of workspace for public-facing (commercial, subscription-based) APIs
      */
     PUBLIC("X"),
     
@@ -25,7 +23,7 @@ public enum WorkspaceType
     
     public static WorkspaceType fromPrefix(String prefix) 
     {
-        if (!StringUtils.isBlank(prefix)) {
+        if (prefix != null && !prefix.isBlank()) {
             for (WorkspaceType t: WorkspaceType.values())
                 if (t.prefix.equalsIgnoreCase(prefix))
                     return t;

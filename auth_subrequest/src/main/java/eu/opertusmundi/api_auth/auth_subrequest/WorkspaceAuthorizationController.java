@@ -39,8 +39,6 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.TmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsRequest;
-import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
-import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceType;
 import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedEvent;
 import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedToWorkspaceResourceEvent;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
@@ -50,6 +48,8 @@ import eu.opertusmundi.api_auth.auth_subrequest.service.AccountService;
 import eu.opertusmundi.api_auth.auth_subrequest.service.Authorizer;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
+import eu.opertusmundi.api_auth.model.WorkspaceInfo;
+import eu.opertusmundi.api_auth.model.WorkspaceType;
 
 import static eu.opertusmundi.api_auth.auth_subrequest.util.QueryStringUtil.*;
 import static eu.opertusmundi.api_auth.auth_subrequest.ExtraHttpHeaders.*;
@@ -77,7 +77,7 @@ public class WorkspaceAuthorizationController
         }
         final WorkspaceType type = WorkspaceType.fromPrefix(workspaceMatcher.group("workspacePrefix"));
         final String providerAccountKey = workspaceMatcher.group("providerAccountKey");
-        return new WorkspaceInfo(type, providerAccountKey);
+        return WorkspaceInfo.of(type, providerAccountKey);
     }
     
     @Context
@@ -117,7 +117,6 @@ public class WorkspaceAuthorizationController
     @Named("private_ogc.OwsAuthorizer")
     Authorizer<OwsRequest> owsAuthorizerForPrivateWorkspace;
     
-    // Fixme
     @Inject
     Event<AuthorizationGrantedToWorkspaceResourceEvent> successEvent;
     
@@ -266,7 +265,6 @@ public class WorkspaceAuthorizationController
                         .originalUrl(originalUrl())
                         .workspaceInfo(workspaceInfo)
                         .consumerAccountClient(consumerAccountClient)
-                        .providerAccount(providerAccount)
                         .build()))
             ));
         

@@ -2,7 +2,7 @@ package eu.opertusmundi.api_auth.auth_subrequest.model.exception;
 
 import java.util.UUID;
 
-import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
+import eu.opertusmundi.api_auth.model.WorkspaceInfo;
 
 public class ConsumerNotAuthorizedForWorkspaceException extends RuntimeException
 {
