@@ -1,5 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest;
 
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.GET;
@@ -25,14 +26,14 @@ import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.http.HttpMethod;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.time.ZonedDateTime;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import eu.opertusmundi.api_auth.auth_subrequest.model.BaseRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.OwsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.TmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
@@ -40,6 +41,8 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceInfo;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WorkspaceType;
+import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedEvent;
+import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedToWorkspaceResourceEvent;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForWorkspaceException;
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
@@ -114,6 +117,10 @@ public class WorkspaceAuthorizationController
     @Named("private_ogc.OwsAuthorizer")
     Authorizer<OwsRequest> owsAuthorizerForPrivateWorkspace;
     
+    // Fixme
+    @Inject
+    Event<AuthorizationGrantedToWorkspaceResourceEvent> successEvent;
+    
     @GET
     @Path("/wms")
     public Uni<RestResponse<?>> authorizeWms(
@@ -124,14 +131,19 @@ public class WorkspaceAuthorizationController
             return Uni.createFrom().item(responseForBadRequest(
                 "only GET (KVP-style) is allowed for WMS requests [origRequestMethod=" + origRequestMethod + "]"));
         }
-        
-        final Supplier<WmsRequest> requestSupplier = 
-            () -> WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
-        
-        return authorizeOwsRequest(
-            requestSupplier, wmsAuthorizerForPublicWorkspace, owsAuthorizerForPrivateWorkspace);
+               
+        final WorkspaceInfo workspaceInfo = workspaceInfo();
+        final WmsRequest request = WmsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
+        switch (workspaceInfo.getType()) {
+        case PRIVATE:
+            return authorize1(request, workspaceInfo, authRequestRedirect, owsAuthorizerForPrivateWorkspace);
+        case PUBLIC:
+            return authorize1(request, workspaceInfo, authRequestRedirect, wmsAuthorizerForPublicWorkspace);
+        default:
+            throw new IllegalStateException("unknown workspace type: [" + workspaceInfo.getType() + "]");
+        }
     }
-   
+    
     @GET
     @Path("/gwc/service/wmts")
     public Uni<RestResponse<?>> authorizeWmts(
@@ -143,11 +155,16 @@ public class WorkspaceAuthorizationController
                 "only GET (KVP-style) is allowed for WMTS requests [origRequestMethod=" + origRequestMethod + "]"));
         }
         
-        final Supplier<WmtsRequest> requestSupplier = 
-            () -> WmtsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
-        
-        return authorizeOwsRequest(
-            requestSupplier, wmtsAuthorizerForPublicWorkspace, owsAuthorizerForPrivateWorkspace);
+        final WorkspaceInfo workspaceInfo = workspaceInfo();
+        final WmtsRequest request = WmtsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
+        switch (workspaceInfo.getType()) {
+        case PRIVATE:
+            return authorize1(request, workspaceInfo, authRequestRedirect, owsAuthorizerForPrivateWorkspace);
+        case PUBLIC:
+            return authorize1(request, workspaceInfo, authRequestRedirect, wmtsAuthorizerForPublicWorkspace);
+        default:
+            throw new IllegalStateException("unknown workspace type: [" + workspaceInfo.getType() + "]");
+        }
     }
     
     // See also: https://www.geowebcache.org/docs/current/services/tms.html
@@ -184,7 +201,8 @@ public class WorkspaceAuthorizationController
         Validate.isTrue(formatExtension.equalsIgnoreCase(fileNameParts[1]), 
             "fileName extension must be same as format extension specified at layer path component");
         
-        final Supplier<TmsRequest> requestSupplier = () -> TmsRequest.builder()
+        final WorkspaceInfo workspaceInfo = workspaceInfo();
+        final TmsRequest request = TmsRequest.builder()
             .serviceVersion(TmsRequest.ServiceVersion.fromString(serviceVersion))
             .layerName(layerName)
             .gridsetId(gridsetId)
@@ -192,8 +210,14 @@ public class WorkspaceAuthorizationController
             .z(z).x(x).y(y)
             .build();
         
-        return authorizeOwsRequest(
-            requestSupplier, tmsAuthorizerForPublicWorkspace, owsAuthorizerForPrivateWorkspace);
+        switch (workspaceInfo.getType()) {
+        case PRIVATE:
+            return authorize1(request, workspaceInfo, authRequestRedirect, owsAuthorizerForPrivateWorkspace);
+        case PUBLIC:
+            return authorize1(request, workspaceInfo, authRequestRedirect, tmsAuthorizerForPublicWorkspace);
+        default:
+            throw new IllegalStateException("unknown workspace type: [" + workspaceInfo.getType() + "]");
+        }
     }
     
     @GET
@@ -207,53 +231,49 @@ public class WorkspaceAuthorizationController
                 "only GET (KVP-style) is allowed for WFS requests [origRequestMethod=" + origRequestMethod + "]"));
         }
         
-        final Supplier<WfsRequest> requestSupplier = 
-            () -> WfsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
-        
-        return authorizeOwsRequest(
-            requestSupplier, wfsAuthorizerForPublicWorkspace, owsAuthorizerForPrivateWorkspace);
+        final WorkspaceInfo workspaceInfo = workspaceInfo();
+        final WfsRequest request = WfsRequest.fromMap(parseQueryStringToMap(authRequestRedirect));
+        switch (workspaceInfo.getType()) {
+        case PRIVATE:
+            return authorize1(request, workspaceInfo, authRequestRedirect, owsAuthorizerForPrivateWorkspace);
+        case PUBLIC:
+            return authorize1(request, workspaceInfo, authRequestRedirect, wfsAuthorizerForPublicWorkspace);
+        default:
+            throw new IllegalStateException("unknown workspace type: [" + workspaceInfo.getType() + "]");
+        }
     }
     
-    private <R extends OwsRequest> Uni<RestResponse<?>> authorizeOwsRequest(
-        Supplier<? extends R> requestSupplier, 
-        Authorizer<? super R> authorizerForPublicWorkspace,
-        Authorizer<? super R> authorizerForPrivateWorkspace)
+    private <R extends OwsRequest> Uni<RestResponse<?>> authorize1(
+        R request, WorkspaceInfo workspaceInfo, URI authRequestRedirect, Authorizer<? super R> authorizer)
     {
-        final String clientKey = clientKeyFromContext();
-        final WorkspaceInfo workspaceInfo = workspaceInfoFromContext();
-        final String requestId = requestIdFromContext();
-        final var request = requestSupplier.get();
+        final String clientKey = clientKey();
+        final String requestId = requestId();
         
         final Uni<AccountClientDto> consumerAccountClientUni = 
             accountClientService.findByKey(clientKey, false /*brief*/);
         final Uni<AccountDto> providerAccountUni = 
             accountService.findByKey(workspaceInfo.getProviderAccountKey());
         
-        final Uni<Void> authorizationUni = consumerAccountClientUni.chain(consumerAccountClient -> {
-           return providerAccountUni.chain(providerAccount -> {
-               switch (workspaceInfo.getType()) {
-               case PRIVATE:
-                   // consumer is accessing a private workspace 
-                   return authorizerForPrivateWorkspace.authorize(
-                       consumerAccountClient, providerAccount, requestId, request);
-               case PUBLIC:
-                   // consumer is accessing a public workspace
-                   return authorizerForPublicWorkspace.authorize(
-                       consumerAccountClient, providerAccount, requestId, request);
-               default:
-                   // unknown workspace type
-                   return Uni.createFrom().failure(
-                       new IllegalStateException(
-                           "unknown workspace type: [" + workspaceInfo.getType() + "]"));
-               }
-           }); 
-        });
+        final Uni<Void> authorizationUni = consumerAccountClientUni.chain(consumerAccountClient -> 
+            providerAccountUni.chain(providerAccount -> 
+                authorizer.authorize(consumerAccountClient, providerAccount, requestId, request)
+                    // Fire event on success
+                    .invoke(() -> successEvent.fireAsync(AuthorizationGrantedToWorkspaceResourceEvent.builder()
+                        .when(ZonedDateTime.now())
+                        .requestId(requestId)
+                        .request(request)
+                        .authRequestRedirect(authRequestRedirect)
+                        .originalUrl(originalUrl())
+                        .workspaceInfo(workspaceInfo)
+                        .consumerAccountClient(consumerAccountClient)
+                        .providerAccount(providerAccount)
+                        .build()))
+            ));
         
         return authorizationUni.onItemOrFailure()
             .transform((nullItem, exception) -> {
                 if (exception == null) {
                     // no exception received: success
-                    // Todo fire success event
                     return responseForSuccess();
                 } else if (exception instanceof ConsumerNotAuthorizedForResourceException
                         || exception instanceof ConsumerNotAuthorizedForWorkspaceException) {
@@ -265,7 +285,7 @@ public class WorkspaceAuthorizationController
             });
     }
     
-    private String clientKeyFromContext()
+    private String clientKey()
     {
         final JsonWebToken jwt = (JsonWebToken) securityIdentity.getPrincipal();
         
@@ -278,15 +298,24 @@ public class WorkspaceAuthorizationController
         return clientKey;
     }
     
-    private WorkspaceInfo workspaceInfoFromContext()
+    private WorkspaceInfo workspaceInfo()
     {
         final MultivaluedMap<String, String> pathParameters = uriInfo.getPathParameters();
         return workspaceInfoFromString(pathParameters.getFirst("workspace"));
     }
         
-    private String requestIdFromContext()
+    private String requestId()
     {
         return this.httpHeaders.getHeaderString(REQUEST_ID_HEADER_NAME);
+    }
+    
+    private URL originalUrl()
+    {
+        try {
+            return new URL(this.httpHeaders.getHeaderString(ORIG_URL_HEADER_NAME));
+        } catch (MalformedURLException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
         
     private RestResponse<Object> responseForBadRequest(Throwable ex)

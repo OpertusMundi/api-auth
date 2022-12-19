@@ -8,9 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 
-import org.apache.commons.lang3.Validate;
-
-import static eu.opertusmundi.api_auth.auth_subrequest.model.RequestType.TMS;
+import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.TMS;
 
 /**
  * Represents a TMS request
@@ -123,7 +121,7 @@ public class TmsRequest extends OwsRequest
         int z, int x, int y)
     {
         // Note: TMS does not really have a request field; this empty name is just for satisfying parent constructor
-        super(TMS.name(), serviceVersion == null? null : serviceVersion.versionString, "");
+        super(TMS, serviceVersion == null? null : serviceVersion.versionString, "");
         this.serviceVersion = serviceVersion;
         this.layerName = layerName;
         this.gridsetId = gridsetId;

@@ -6,16 +6,16 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.*;
+
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsDescribeLayerRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetCapabilitiesRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetMapRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.MatcherAssert.*;
-
+import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.WMS;
 import static eu.opertusmundi.api_auth.auth_subrequest.util.QueryStringUtil.*;
 
 public class WmsRequestTests
@@ -41,7 +41,7 @@ public class WmsRequestTests
         final Map<String, String> queryParameters = parseQueryStringToMap(uri);
         final WmsGetCapabilitiesRequest request = (WmsGetCapabilitiesRequest) WmsRequest.fromMap(queryParameters);
         
-        assertEquals("WMS", request.getService());
+        assertEquals(WMS, request.getService());
         assertEquals("1.1.1", request.getVersion());
         assertEquals("GetCapabilities", request.getRequest());
     }
@@ -59,7 +59,7 @@ public class WmsRequestTests
         final Map<String, String> queryParameters = parseQueryStringToMap(uri);
         final WmsDescribeLayerRequest request = (WmsDescribeLayerRequest) WmsRequest.fromMap(queryParameters);
         
-        assertEquals("WMS", request.getService());
+        assertEquals(WMS, request.getService());
         assertEquals("1.1.1", request.getVersion());
         assertEquals("DescribeLayer", request.getRequest());
         assertEquals("text/xml", request.getOutputFormat().toFormatString());

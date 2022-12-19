@@ -11,13 +11,12 @@ import javax.validation.constraints.NotNull;
  */
 @lombok.Getter
 @lombok.AllArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-public abstract class OwsRequest extends BaseRequest
+public abstract class OwsRequest extends Request
 {
     /**
-     * The service name (e.g. `WMS`)
+     * The service type (e.g. `WMS`)
      */
-    @NotBlank
-    protected final String service;
+    protected final OwsServiceType service;
  
     public static final String SERVICE_PARAMETER_NAME = "service";
     

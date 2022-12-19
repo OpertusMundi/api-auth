@@ -1,6 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
-import static eu.opertusmundi.api_auth.auth_subrequest.model.RequestType.WMTS;
+import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.WMTS;
 
 import java.util.Map;
 
@@ -85,7 +85,7 @@ public abstract class WmtsRequest extends OwsRequest
     
     WmtsRequest(ServiceVersion version, OperationType op)
     {
-        super(WMTS.name(), version == null? null : version.versionString, op.operationName);
+        super(WMTS, version == null? null : version.versionString, op.operationName);
         this.serviceVersion = version;
     }
     

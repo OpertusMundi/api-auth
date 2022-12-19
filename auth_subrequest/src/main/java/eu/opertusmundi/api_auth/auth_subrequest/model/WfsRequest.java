@@ -1,6 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
-import static eu.opertusmundi.api_auth.auth_subrequest.model.RequestType.WFS;
+import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.WFS;
 
 import java.util.Arrays;
 import java.util.List;
@@ -97,7 +97,7 @@ public abstract class WfsRequest extends OwsRequest
     
     WfsRequest(ServiceVersion version, OperationType op)
     {
-        super(WFS.name(), version == null? null : version.versionString, op.operationName);
+        super(WFS, version == null? null : version.versionString, op.operationName);
         this.serviceVersion = version;
     }
     

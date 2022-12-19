@@ -4,13 +4,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import eu.opertusmundi.api_auth.auth_subrequest.model.BaseRequest;
+import eu.opertusmundi.api_auth.auth_subrequest.model.Request;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.model.AccountClientDto;
 import eu.opertusmundi.api_auth.model.AccountDto;
 import io.smallrye.mutiny.Uni;
 
-public interface Authorizer <R extends BaseRequest>
+public interface Authorizer <R extends Request>
 {
     /**
      * Authorize a consumer trying to perform a request on a provider's resource 
