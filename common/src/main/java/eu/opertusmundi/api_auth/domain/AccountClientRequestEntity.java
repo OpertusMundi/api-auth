@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 
 import eu.opertusmundi.api_auth.domain.converter.StringArrayJoiningWithDelimiterConverter;
 import eu.opertusmundi.api_auth.model.AccountClientRequestDto;
+import eu.opertusmundi.api_auth.model.OwsServiceInfo;
 import eu.opertusmundi.api_auth.model.WorkspaceInfo;
 
 @lombok.Getter
@@ -48,7 +49,10 @@ public class AccountClientRequestEntity
     @Embedded
     private WorkspaceInfoEmbeddable workspaceInfo;
     
-    @Column(name = "`asset_keys`")
+    @Embedded
+    private OwsServiceInfoEmbeddable owsServiceInfo;
+    
+    @Column(name = "`asset_keys`", updatable = false)
     @Convert(converter = StringArrayJoiningWithDelimiterConverter.class)
     private String[] assetKeys; 
 
@@ -62,20 +66,34 @@ public class AccountClientRequestEntity
             .map(URI::toString).orElse(null);
         this.workspaceInfo = Optional.ofNullable(dto.getWorkspaceInfo())
             .map(WorkspaceInfoEmbeddable::new).orElse(null);
+        this.owsServiceInfo = Optional.ofNullable(dto.getOwsServiceInfo())
+            .map(OwsServiceInfoEmbeddable::new).orElse(null);
         this.assetKeys = dto.getAssetKeys();
     }
     
     public AccountClientRequestDto toDto()
     {
-        return AccountClientRequestDto.builder()
+        var b = AccountClientRequestDto.builder()
             .recorded(recorded)
             .requestId(requestId)
             .clientKey(clientKey)
             .hostname(hostname)
-            .uri(URI.create(uri))
-            .workspaceInfo(WorkspaceInfo.of(
-                workspaceInfo.type, workspaceInfo.providerAccountKey))
-            .assetKeys(assetKeys)
-            .build();
+            .uri(URI.create(uri));
+        
+        if (workspaceInfo != null) {
+            b.workspaceInfo(WorkspaceInfo.of(
+                workspaceInfo.type, workspaceInfo.providerAccountKey));
+        }
+        
+        if (owsServiceInfo != null) {
+            b.owsServiceInfo(OwsServiceInfo.of(
+                owsServiceInfo.serviceType, owsServiceInfo.serviceVersion, owsServiceInfo.request));
+        }
+        
+        if (assetKeys != null) {
+            b.assetKeys(assetKeys);
+        }
+        
+        return b.build();
     }
 }

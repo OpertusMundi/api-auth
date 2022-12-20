@@ -1,6 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
-import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.WMTS;
+import static eu.opertusmundi.api_auth.model.OwsServiceType.WMTS;
 
 import java.util.Map;
 

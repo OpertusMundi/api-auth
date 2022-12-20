@@ -10,10 +10,10 @@ import eu.opertusmundi.api_auth.model.AccountDto;
 import eu.opertusmundi.api_auth.model.WorkspaceInfo;
 
 @lombok.Getter
-public class AuthorizationGrantedToWorkspaceResourceEvent extends AuthorizationGrantedEvent
+public class AuthorizationGrantedForWorkspaceResourceEvent extends AuthorizationGrantedEvent
 {
     @lombok.Builder
-    AuthorizationGrantedToWorkspaceResourceEvent(
+    AuthorizationGrantedForWorkspaceResourceEvent(
         ZonedDateTime when, String requestId, URL originalUrl, URI authRequestRedirect, Request request,
         WorkspaceInfo workspaceInfo, AccountClientDto consumerAccountClient)
     {

@@ -2,6 +2,7 @@ package eu.opertusmundi.api_auth.model;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -27,5 +28,18 @@ public class AccountClientRequestDto
     
     private WorkspaceInfo workspaceInfo;
     
+    private OwsServiceInfo owsServiceInfo;
+    
     private String[] assetKeys;
+
+    @Override
+    public String toString()
+    {
+        return String.format(
+            "AccountClientRequestDto ["
+                + "requestId=%s, recorded=%s, clientKey=%s, hostname=%s, uri=%s, workspaceInfo=%s, "
+                + "owsServiceInfo=%s, assetKeys=%s]",
+            requestId, recorded, clientKey, hostname, uri, workspaceInfo, 
+            owsServiceInfo, Arrays.toString(assetKeys));
+    }
 }

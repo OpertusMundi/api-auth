@@ -40,7 +40,7 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WfsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedEvent;
-import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedToWorkspaceResourceEvent;
+import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedForWorkspaceResourceEvent;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForWorkspaceException;
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
@@ -118,7 +118,7 @@ public class WorkspaceAuthorizationController
     Authorizer<OwsRequest> owsAuthorizerForPrivateWorkspace;
     
     @Inject
-    Event<AuthorizationGrantedToWorkspaceResourceEvent> successEvent;
+    Event<AuthorizationGrantedForWorkspaceResourceEvent> successEvent;
     
     @GET
     @Path("/wms")
@@ -257,7 +257,7 @@ public class WorkspaceAuthorizationController
             providerAccountUni.chain(providerAccount -> 
                 authorizer.authorize(consumerAccountClient, providerAccount, requestId, request)
                     // Fire event on success
-                    .invoke(() -> successEvent.fireAsync(AuthorizationGrantedToWorkspaceResourceEvent.builder()
+                    .invoke(() -> successEvent.fireAsync(AuthorizationGrantedForWorkspaceResourceEvent.builder()
                         .when(ZonedDateTime.now())
                         .requestId(requestId)
                         .request(request)

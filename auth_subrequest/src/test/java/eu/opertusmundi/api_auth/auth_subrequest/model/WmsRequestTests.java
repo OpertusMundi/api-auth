@@ -15,8 +15,8 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetCapabilitiesRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsGetMapRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 
-import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.WMS;
 import static eu.opertusmundi.api_auth.auth_subrequest.util.QueryStringUtil.*;
+import static eu.opertusmundi.api_auth.model.OwsServiceType.WMS;
 
 public class WmsRequestTests
 {

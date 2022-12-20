@@ -1,6 +1,6 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
-import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.WFS;
+import static eu.opertusmundi.api_auth.model.OwsServiceType.WFS;
 
 import java.util.Arrays;
 import java.util.List;

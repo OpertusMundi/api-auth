@@ -1,4 +1,4 @@
-package eu.opertusmundi.api_auth.auth_subrequest.model;
+package eu.opertusmundi.api_auth.model;
 
 public enum OwsServiceType
 {

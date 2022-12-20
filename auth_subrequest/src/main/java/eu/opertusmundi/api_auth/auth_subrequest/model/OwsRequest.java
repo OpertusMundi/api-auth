@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import eu.opertusmundi.api_auth.model.OwsServiceType;
+
 /**
  * Represents a base OWS (WMS/WMTS/WFS) request
  */

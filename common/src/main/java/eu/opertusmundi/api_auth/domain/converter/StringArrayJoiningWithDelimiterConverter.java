@@ -11,12 +11,12 @@ public class StringArrayJoiningWithDelimiterConverter implements AttributeConver
     @Override
     public String convertToDatabaseColumn(String[] value)
     {
-        return value == null? null : String.join(DELIMITER, value);
+        return value == null || value.length == 0? null : String.join(DELIMITER, value);
     }
 
     @Override
     public String[] convertToEntityAttribute(String data)
     {
-        return data == null? null : data.split(DELIMITER);
+        return data == null || data.isEmpty()? null : data.split(DELIMITER);
     }
 }

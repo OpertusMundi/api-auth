@@ -16,6 +16,6 @@ public class AccountClientRequestRepository implements PanacheRepositoryBase<Acc
     public Uni<AccountClientRequestEntity> createFromDto(AccountClientRequestDto dto)
     {
         AccountClientRequestEntity entity = new AccountClientRequestEntity(dto);
-        return this.persist(entity);
+        return this.persistAndFlush(entity);
     }
 }

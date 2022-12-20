@@ -1,5 +1,7 @@
 package eu.opertusmundi.api_auth.auth_subrequest.model;
 
+import static eu.opertusmundi.api_auth.model.OwsServiceType.TMS;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -7,8 +9,6 @@ import java.util.Map;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
-
-import static eu.opertusmundi.api_auth.auth_subrequest.model.OwsServiceType.TMS;
 
 /**
  * Represents a TMS request
