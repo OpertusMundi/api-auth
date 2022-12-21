@@ -9,6 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,10 @@ public class AuthorizationEventRecorder
     
     @Inject
     LayerNamingStrategy layerNamingStrategy;
+    
+    @ConfigProperty(
+        name = "eu.opertusmundi.api_auth.auth_subrequest.record-authorization-events", defaultValue = "true")
+    boolean record = true;
     
     public void onAuthorizationGranted(@ObservesAsync AuthorizationGrantedForWorkspaceResourceEvent event)
     {
@@ -67,13 +72,18 @@ public class AuthorizationEventRecorder
             b.owsServiceInfo(OwsServiceInfo.of(o.getService(), o.getVersion(), o.getRequest()));
         }
         
-        accountClientRequestRepository.createFromDto(b.build())
-            .subscribe().with(
-                // success callback
-                Objects::requireNonNull, 
-                // failure callback
-                exception -> {
-                    LOGGER.error("Failed to persist entity for AccountClientRequestEntity", exception);
-                });
+        final var dto = b.build();
+        if (record) {
+            accountClientRequestRepository.createFromDto(dto)
+                .subscribe().with(
+                    // success callback
+                    Objects::requireNonNull, 
+                    // failure callback
+                    exception -> {
+                        LOGGER.error("Failed to persist entity for AccountClientRequestEntity", exception);
+                    });
+        } else {
+            LOGGER.info("About to persist entity from DTO (DRY-RUN): {}", dto);
+        }
     }
 }
