@@ -1,8 +1,11 @@
 package eu.opertusmundi.api_auth.auth_subrequest.service;
 
 import java.net.URL;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -12,6 +15,11 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.quarkus.scheduler.Scheduled;
+import io.quarkus.scheduler.Scheduled.ConcurrentExecution;
+import io.smallrye.common.annotation.Blocking;
+import io.smallrye.mutiny.helpers.queues.Queues;
 
 import eu.opertusmundi.api_auth.auth_subrequest.model.OwsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedForWorkspaceResourceEvent;
@@ -37,7 +45,35 @@ public class AuthorizationEventRecorder
         name = "eu.opertusmundi.api_auth.auth_subrequest.record-authorization-events", defaultValue = "true")
     boolean record = true;
     
-    public void onAuthorizationGranted(@ObservesAsync AuthorizationGrantedForWorkspaceResourceEvent event)
+    private final Queue<AccountClientRequestDto> recordQueue = Queues.createMpscQueue();
+    
+    private final int maxBatchSize = 25;
+    
+    private final int batchTimeoutInSeconds = 1;
+    
+    @Scheduled(every = "10s", concurrentExecution = ConcurrentExecution.SKIP)
+    @Blocking
+    void recordToDatabase()
+    {
+        LOGGER.debug("Persisting DTOs to database... [queue.empty={}]", recordQueue.isEmpty());
+        
+        final List<AccountClientRequestDto> batch = new ArrayList<>(maxBatchSize);
+        AccountClientRequestDto dto = null;
+        do {
+            if ((dto = recordQueue.poll()) != null) {
+                batch.add(dto);
+            }
+            if ((batch.size() == maxBatchSize) || (batch.size() > 0 && dto == null)) {
+                LOGGER.debug("Persisting a batch of {} record(s)", batch.size());
+                accountClientRequestRepository.createFromDtos(batch)
+                    .await().atMost(Duration.ofSeconds(batchTimeoutInSeconds));
+                batch.clear();
+            }
+        } while (dto != null);
+        
+    }
+    
+    void onAuthorizationGranted(@ObservesAsync AuthorizationGrantedForWorkspaceResourceEvent event)
     {
         final String requestId = event.getRequestId();
         final AccountClientDto consumerAccountClientDto = event.getConsumerAccountClient();
@@ -74,14 +110,7 @@ public class AuthorizationEventRecorder
         
         final var dto = b.build();
         if (record) {
-            accountClientRequestRepository.createFromDto(dto)
-                .subscribe().with(
-                    // success callback
-                    Objects::requireNonNull, 
-                    // failure callback
-                    exception -> {
-                        LOGGER.error("Failed to persist entity for AccountClientRequestEntity", exception);
-                    });
+            recordQueue.offer(dto);
         } else {
             LOGGER.info("About to persist entity from DTO (DRY-RUN): {}", dto);
         }

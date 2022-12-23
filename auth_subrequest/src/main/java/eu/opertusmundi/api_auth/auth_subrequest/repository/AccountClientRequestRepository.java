@@ -4,6 +4,9 @@ import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.quarkus.hibernate.reactive.panache.common.runtime.ReactiveTransactional;
 import io.smallrye.mutiny.Uni;
 
+import java.util.Collection;
+import java.util.stream.Stream;
+
 import javax.enterprise.context.ApplicationScoped;
 
 import eu.opertusmundi.api_auth.domain.AccountClientRequestEntity;
@@ -17,5 +20,14 @@ public class AccountClientRequestRepository implements PanacheRepositoryBase<Acc
     {
         AccountClientRequestEntity entity = new AccountClientRequestEntity(dto);
         return this.persistAndFlush(entity);
+    }
+
+    @ReactiveTransactional
+    public Uni<Void> createFromDtos(Collection<AccountClientRequestDto> collection)
+    {
+        final Stream<AccountClientRequestEntity> entities = 
+            collection.stream().map(AccountClientRequestEntity::new);
+        return this.persist(entities)
+            .chain(nullItem -> this.flush());
     }
 }
