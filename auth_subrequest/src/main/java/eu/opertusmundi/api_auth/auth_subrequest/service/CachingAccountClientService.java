@@ -41,8 +41,6 @@ public class CachingAccountClientService implements AccountClientService
             return Uni.createFrom().item(optionalDto.orElse(null));
         }
         return delegate.findByKey(key, briefRepresentation)
-            .invoke(dto -> {
-                cacheFindByKey.put(cacheKey, Optional.ofNullable(dto));
-            });
+            .invoke(dto -> cacheFindByKey.put(cacheKey, Optional.ofNullable(dto)));
     }
 }

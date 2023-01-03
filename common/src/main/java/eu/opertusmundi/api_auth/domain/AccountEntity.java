@@ -83,7 +83,7 @@ public class AccountEntity
         d.setEmail(email);
         d.setEmailVerified(emailVerified);
         
-        if (includeClients) {
+        if (includeClients && clients != null) {
             Stream<AccountClientDto> clientDtoStream = clients.stream()
                 .map(AccountClientEntity::toDto);
             if (backLink) {

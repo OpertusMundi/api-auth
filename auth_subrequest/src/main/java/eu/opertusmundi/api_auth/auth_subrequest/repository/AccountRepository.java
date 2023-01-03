@@ -45,4 +45,19 @@ public class AccountRepository implements PanacheRepositoryBase<AccountEntity, I
             this.find("FROM Account a LEFT JOIN FETCH a.clients WHERE a.id = ?1", id);
         return q.singleResult();
     }
+    
+    @ReactiveTransactional
+    public Uni<AccountEntity> findByEmail(String email, boolean fetchAssociatedClients)
+    {
+        Objects.requireNonNull(email);
+        
+        PanacheQuery<AccountEntity> q;
+        if (fetchAssociatedClients) {
+            q = this.find("FROM Account a LEFT JOIN FETCH a.clients WHERE a.email = ?1", email);
+        } else {
+            q = this.find("FROM Account a WHERE a.email = ?1", email);
+        }
+        
+        return q.singleResult();
+    }
 }

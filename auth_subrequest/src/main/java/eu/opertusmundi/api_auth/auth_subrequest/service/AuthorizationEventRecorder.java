@@ -55,7 +55,7 @@ public class AuthorizationEventRecorder
     @Blocking
     void recordToDatabase()
     {
-        LOGGER.debug("Persisting DTOs to database... [queue.empty={}]", recordQueue.isEmpty());
+        //LOGGER.debug("Persisting DTOs to database... [queue.empty={}]", recordQueue.isEmpty());
         
         final List<AccountClientRequestDto> batch = new ArrayList<>(maxBatchSize);
         AccountClientRequestDto dto = null;

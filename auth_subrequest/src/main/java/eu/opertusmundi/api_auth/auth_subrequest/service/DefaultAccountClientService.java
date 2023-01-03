@@ -9,6 +9,9 @@ import javax.inject.Named;
 import javax.persistence.NoResultException;
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.smallrye.mutiny.Uni;
 
 import eu.opertusmundi.api_auth.auth_subrequest.repository.AccountClientRepository;
@@ -19,6 +22,8 @@ import eu.opertusmundi.api_auth.model.AccountClientDto;
 @Named("defaultAccountClientService")
 public class DefaultAccountClientService implements AccountClientService
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAccountClientService.class);
+    
     @Inject
     AccountClientRepository accountClientRepository;
 
@@ -34,6 +39,9 @@ public class DefaultAccountClientService implements AccountClientService
         return accountClientRepository.findByKey(key, !briefRepresentation)
             .map(briefRepresentation? briefToDtoMapper : fullToDtoMapper)
             .onFailure(NoResultException.class)
-                .transform(ex -> new IllegalStateException("no account client for key: [" + key + "]", ex));
+                .recoverWithItem(exception -> {
+                    LOGGER.info("no account client for key [" + key + "]", exception);
+                    return null; // recover with null
+                });
     }
 }

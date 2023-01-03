@@ -30,7 +30,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +43,7 @@ import eu.opertusmundi.api_auth.auth_subrequest.model.WmsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.WmtsRequest;
 import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedEvent;
 import eu.opertusmundi.api_auth.auth_subrequest.model.event.AuthorizationGrantedForWorkspaceResourceEvent;
+import eu.opertusmundi.api_auth.auth_subrequest.model.exception.AccountClientIsRevokedException;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForWorkspaceException;
 import eu.opertusmundi.api_auth.auth_subrequest.service.AccountClientService;
@@ -245,13 +248,10 @@ public class WorkspaceAuthorizationController
     private <R extends OwsRequest> Uni<RestResponse<?>> authorize1(
         R request, WorkspaceInfo workspaceInfo, URI authRequestRedirect, Authorizer<? super R> authorizer)
     {
-        final String clientKey = clientKey();
-        final String requestId = requestId();
+        final String requestId = this.requestId();
         
-        final Uni<AccountClientDto> consumerAccountClientUni = 
-            accountClientService.findByKey(clientKey, false /*brief*/);
-        final Uni<AccountDto> providerAccountUni = 
-            accountService.findByKey(workspaceInfo.getProviderAccountKey());
+        final Uni<AccountClientDto> consumerAccountClientUni = this.consumerAccountClient();
+        final Uni<AccountDto> providerAccountUni = this.providerAccount(workspaceInfo);
         
         final Uni<Void> authorizationUni = consumerAccountClientUni.chain(consumerAccountClient -> 
             providerAccountUni.chain(providerAccount -> 
@@ -273,27 +273,73 @@ public class WorkspaceAuthorizationController
                 if (exception == null) {
                     // no exception received: success
                     return responseForSuccess();
-                } else if (exception instanceof ConsumerNotAuthorizedForResourceException
+                } else if (exception instanceof AccountClientIsRevokedException
+                        || exception instanceof ConsumerNotAuthorizedForResourceException
                         || exception instanceof ConsumerNotAuthorizedForWorkspaceException) {
                     return responseForNotAuthorized(exception);
                 } else {
-                    LOGGER.info("Unexpected failure during authorization of client [" + clientKey + "]", exception);
+                    LOGGER.info("Unexpected failure during authorization of client", exception);
                     return responseForBadRequest(exception);
                 }
             });
     }
     
-    private String clientKey()
+    /**
+     * Map {@code securityIdentity} to a consumer account client
+     */
+    private Uni<AccountClientDto> consumerAccountClient()
     {
         final JsonWebToken jwt = (JsonWebToken) securityIdentity.getPrincipal();
         
-        final String clientKey = jwt.getClaim("clientId");
-        Validate.validState(!StringUtils.isBlank(clientKey), 
-            "claim [clientId] is missing from JWT token");
-        Validate.validState(clientKey.equals(jwt.getClaim(Claims.azp)), 
-            "claim [clientId] is different from claim [azp]");
+        Uni<AccountClientDto> consumerAccountClientUni = null;
         
-        return clientKey;
+        final String clientKey = jwt.getClaim("clientId");
+        if (clientKey != null) {
+            // assuming an access token from a `client_credentials` grant
+            Validate.validState(!StringUtils.isBlank(clientKey), 
+                "claim [clientId] cannot be blank");
+            Validate.validState(clientKey.equals(jwt.getClaim(Claims.azp)), 
+                "claim [clientId] is different from claim [azp]");
+            consumerAccountClientUni = accountClientService.findByKey(clientKey, false /*brief*/)
+                .onItem().ifNull().failWith(
+                    () -> new NoSuchElementException("no client for key [key=" + clientKey + "]"));
+        } else {
+            // assuming an access token from an `authorization_code` grant
+            final String email = jwt.getClaim(Claims.email);
+            Validate.validState(!StringUtils.isBlank(email), 
+                "claim [email] must not be blank (since claim [clientId] is missing)");
+            consumerAccountClientUni = accountService.findByEmail(email, false /*brief*/)
+                .onItem().ifNull().failWith(
+                    () -> new NoSuchElementException("no account for email [email=" + email + "]"))
+                .map(accountDto -> {
+                    return accountDto.getClients().stream()
+                        // select the default client for the account (client key is equal to account key)
+                        .filter(c -> c.getKeyAsUuid().equals(accountDto.getKey()))
+                        .findFirst().orElse(null);
+                })
+                .onItem().ifNull().failWith(
+                    () -> new NoSuchElementException("no client associated with account [email=" + email + "]"));
+        }
+        
+        return consumerAccountClientUni
+            .invoke(accountClientDto -> {
+                if (accountClientDto.getRevoked() != null) {
+                    throw new AccountClientIsRevokedException(accountClientDto.getKey());
+                }
+            });
+    }
+    
+    /**
+     * Map workspace information to a provider account
+     * 
+     * @param workspaceInfo
+     */
+    private Uni<AccountDto> providerAccount(WorkspaceInfo workspaceInfo)
+    {
+        final UUID providerAccountKey = workspaceInfo.getProviderAccountKey();
+        return accountService.findByKey(providerAccountKey)
+            .onItem().ifNull().failWith(
+                () -> new NoSuchElementException("no account with key [key=" + providerAccountKey + "]"));
     }
     
     private WorkspaceInfo workspaceInfo()

@@ -13,25 +13,25 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @lombok.Getter
-@lombok.Setter
 @lombok.NoArgsConstructor
 @JsonInclude(Include.NON_NULL)
 public class AccountClientDto extends ClientDto
-{
-    public AccountClientDto(String key)
-    {
-        super(key);
-    }
-    
+{    
     public AccountClientDto(UUID key)
     {
         super(key == null? null : key.toString());
+        this.keyAsUuid = key;
     }
     
+    @NotNull
+    private UUID keyAsUuid;
+    
+    @lombok.Setter
     @NotNull 
     @Positive
     private Integer accountId;
     
+    @lombok.Setter
     @NotNull
     private AccountDto account;
     
@@ -41,11 +41,14 @@ public class AccountClientDto extends ClientDto
         return this;
     }
     
+    @lombok.Setter
     @NotBlank
     private String alias;
     
+    @lombok.Setter
     private ZonedDateTime created;
 
+    @lombok.Setter
     private ZonedDateTime revoked;
 
     @Override
