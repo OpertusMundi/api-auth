@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import io.smallrye.mutiny.Uni;
 
 import eu.opertusmundi.api_auth.auth_subrequest.model.exception.ConsumerNotAuthorizedForResourceException;
@@ -17,6 +19,11 @@ import eu.opertusmundi.api_auth.model.AccountSubscriptionDto;
 
 abstract class SubscriptionBasedOwsAuthorizerSupport
 {
+    @ConfigProperty(
+        name = "eu.opertusmundi.api_auth.auth_subrequest.service.public-ogc.allow-only-if-client-has-subscription", 
+        defaultValue = "true")
+    boolean allowOnlyIfClientHasSubscription = true;
+    
     @Inject
     LayerNamingStrategy layerNamingStrategy;
     
