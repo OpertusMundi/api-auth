@@ -6,20 +6,26 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import eu.opertusmundi.api_auth.domain.converter.StringArrayJoiningWithDelimiterConverter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import eu.opertusmundi.api_auth.domain.usertype.StringArrayUserType;
 import eu.opertusmundi.api_auth.model.AccountClientRequestDto;
 import eu.opertusmundi.api_auth.model.OwsServiceInfo;
 import eu.opertusmundi.api_auth.model.WorkspaceInfo;
 
 @lombok.Getter
 @lombok.Setter
+@TypeDefs({
+    @TypeDef(name = "string-array", typeClass = StringArrayUserType.class),
+})
 @Entity(name = "AccountClientRequest")
 @Table(schema = "web", name = "`account_client_request`")
 public class AccountClientRequestEntity
@@ -52,8 +58,8 @@ public class AccountClientRequestEntity
     @Embedded
     private OwsServiceInfoEmbeddable owsServiceInfo;
     
-    @Column(name = "`asset_keys`", updatable = false)
-    @Convert(converter = StringArrayJoiningWithDelimiterConverter.class)
+    @Type(type = "string-array")
+    @Column(name = "`asset_keys`", columnDefinition = "text[]", updatable = false)
     private String[] assetKeys; 
 
     public AccountClientRequestEntity(AccountClientRequestDto dto) 
