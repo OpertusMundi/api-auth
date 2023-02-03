@@ -103,7 +103,8 @@ public class AuthorizationEventRecorder
             // Extract asset keys from layer names
             final List<String> assetKeys = 
                 layerNamingStrategy.extractAssetKeysFromLayerNames(o.getLayerNames());
-            b.assetKeys(assetKeys.toArray(String[]::new));
+            if (!assetKeys.isEmpty())
+                b.assetKeys(assetKeys.toArray(String[]::new));
             // Extract basic OWS service info
             b.owsServiceInfo(OwsServiceInfo.of(o.getService(), o.getVersion(), o.getRequest()));
         }
